@@ -1,4 +1,3 @@
-
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -11,19 +10,19 @@ export default defineConfig({
 
     proxy: {
       '/api': {
-        target: 'http://host.docker.internal:8000',
+        target: 'http://bsshop-laravel',
         changeOrigin: true,
         secure: false,
       },
 
       '/sanctum': {
-        target: 'http://host.docker.internal:8000',
+        target: 'http://bsshop-laravel',
         changeOrigin: true,
         secure: false,
       },
 
       '/storage': {
-        target: 'http://host.docker.internal:8000',
+        target: 'http://bsshop-laravel',
         changeOrigin: true,
         secure: false,
       },
