@@ -306,7 +306,7 @@ const Profile = () => {
         }
     };
 
-    const avatarSrc = avatarPreview || (user.avatar ? (user.avatar.startsWith('http') ? user.avatar : `/${user.avatar}`) : '');
+    const avatarSrc = avatarPreview || (user.avatar ? (user.avatar.startsWith('http') ? user.avatar : `${user.avatar}`) : '');
 
     /* -------------------------------------------------------------- */
     /*  Render                                                         */
