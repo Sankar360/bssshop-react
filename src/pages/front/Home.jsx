@@ -226,7 +226,7 @@ const Home = () => {
     (async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/`, {
+        const res = await fetch(`${API_BASE}/home`, {
           headers: { Accept: "application/json" },
         });
         const data = await res.json();
