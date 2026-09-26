@@ -1,0 +1,43 @@
+/* public/css/front/profile.css */
+.info-card {
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.info-card:hover {
+    border-color: #00dafb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 218, 251, 0.1);
+}
+
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.nav-pills .nav-link {
+    border-radius: 8px;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.nav-pills .nav-link:hover {
+    background: rgba(0, 218, 251, 0.1);
+}
+
+.nav-pills .nav-link.active {
+    background: linear-gradient(90deg, #00dafb 0%, #000113 100%);
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .info-card {
+        margin-bottom: 0;
+    }
+}

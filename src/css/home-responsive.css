@@ -1,0 +1,349 @@
+/* src/css/home-responsive.css */
+
+/* ==================================================================
+   HOME PAGE — RESPONSIVE STYLES
+   Scope: Featured Products + Random Products on Home page only.
+   ================================================================== */
+
+
+/* -------------------------------------------------------------- */
+/* 1. NORMAL (RANDOM) PRODUCTS — "You Might Also Like"             */
+/* -------------------------------------------------------------- */
+
+/* Tablet (576–991.98px): 1 per row */
+@media (min-width: 576px) and (max-width: 991.98px) {
+    .home-normal-grid > [class*="col-"] {
+        flex: 0 0 100%;
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+/* Mobile (≤ 575.98px): 1 per row */
+@media (max-width: 575.98px) {
+    .home-normal-grid > [class*="col-"] {
+        flex: 0 0 100%;
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+
+/* -------------------------------------------------------------- */
+/* 2. FEATURED PRODUCTS — CAROUSEL (mobile/tablet) / LOOP ROW (≥750) */
+/* -------------------------------------------------------------- */
+
+/* Remove Bootstrap container padding on small screens so the
+   carousel can span edge-to-edge. */
+@media (max-width: 991.98px) {
+    .featured-container {
+        padding-left: 0;
+        padding-right: 0;
+        max-width: 100%;
+    }
+}
+
+/* Wrapper */
+.featured-carousel {
+    position: relative;
+    padding: 0;
+    width: 100%;
+}
+
+/* Viewport clips overflow */
+.featured-carousel-viewport {
+    overflow: hidden;
+    width: 100%;
+}
+
+/* Track — flex strip used by both modes */
+.featured-carousel-track {
+    display: flex;
+    transition: transform 0.6s ease;
+    will-change: transform;
+}
+
+/* Slides */
+.featured-carousel-slide {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding: 0 12px;
+    box-sizing: border-box;
+}
+
+.featured-carousel-slide .featured-scroll-item {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Arrows */
+.featured-carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.92);
+    color: #222;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.featured-carousel-arrow:hover {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+.featured-carousel-arrow-prev { left: 18px; }
+.featured-carousel-arrow-next { right: 18px; }
+
+
+/* -------------------------------------------------------------- */
+/* 3. MOBILE-ONLY TWEAKS (≤ 575.98px)                              */
+/* -------------------------------------------------------------- */
+@media (max-width: 575.98px) {
+    .featured-carousel-arrow {
+        width: 34px;
+        height: 34px;
+        font-size: 0.85rem;
+    }
+    .featured-carousel-arrow-prev { left: 14px; }
+    .featured-carousel-arrow-next { right: 14px; }
+
+    .home-products-scope .featured-scroll-item .featured-product-image,
+    .home-products-scope .featured-scroll-item .card-img-top {
+        height: 200px;
+        object-fit: cover;
+        display: block;
+        width: 100%;
+    }
+
+    .home-products-scope .featured-scroll-item .product-card {
+        height: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .home-products-scope .featured-scroll-item .card-body {
+        flex: 0 0 auto;
+        padding: 1rem;
+    }
+}
+
+
+/* -------------------------------------------------------------- */
+/* 4. TABLET LANDSCAPE + DESKTOP (≥ 750px) — SINGLE-ROW LOOP       */
+/* -------------------------------------------------------------- */
+/* Track stays a horizontal flex row. It does NOT wrap. All cards  */
+/* appear in ONE row that is horizontally scrollable if needed.    */
+/* Arrows allow looping through the row.                           */
+
+@media (min-width: 750px) {
+    /* Viewport keeps overflow hidden so arrows drive the view */
+    .featured-carousel-viewport {
+        overflow: hidden;
+    }
+
+    /* Track: single horizontal row of all products */
+    .featured-carousel-track {
+        display: flex;
+        flex-wrap: nowrap;              /* ⬅ single row, no wrapping */
+        gap: 1rem;
+        transform: none !important;    /* JS translateX ignored */
+        transition: transform 0.4s ease;
+    }
+
+    /* Each slide: fixed-width card so many fit per view */
+    .featured-carousel-slide {
+        flex: 0 0 auto;                 /* ⬅ size determined by width below */
+        width: 240px;
+        max-width: 240px;
+        padding: 0;
+        display: block;
+    }
+
+    .featured-carousel-slide .featured-scroll-item {
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
+    }
+
+    /* Make the single-row view a bit more compact */
+    .home-products-scope .featured-scroll-item .featured-product-image,
+    .home-products-scope .featured-scroll-item .card-img-top {
+        height: 200px;
+        object-fit: cover;
+        display: block;
+        width: 100%;
+    }
+
+    .home-products-scope .featured-scroll-item .product-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .home-products-scope .featured-scroll-item .card-body {
+        flex: 1 1 auto;
+        padding: 1rem;
+    }
+}
+
+/* Wider cards on large desktop */
+@media (min-width: 1200px) {
+    .featured-carousel-slide {
+        width: 260px;
+        max-width: 260px;
+    }
+}
+
+
+/* -------------------------------------------------------------- */
+/* 5. RANDOM PRODUCTS — ADD TO CART BUTTON (NEW STYLE)             */
+/* -------------------------------------------------------------- */
+/* Replaces the plain full-width button with a cleaner "pill"       */
+/* layout that has a cart icon badge + label inside.                */
+
+@media (max-width: 991.98px) {
+    /* Stack the two card actions vertically */
+    .home-products-scope .card-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        width: 100%;
+        align-items: stretch;
+        margin-top: 0.5rem;
+    }
+
+    /* ----- Primary "Add to Cart" button ----- */
+    .home-products-scope .card-actions .btn-add-cart:not(.view-btn) {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        line-height: 1.2;
+
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .home-products-scope .card-actions .btn-add-cart:not(.view-btn):active {
+        transform: scale(0.98);
+        box-shadow: 0 2px 6px rgba(13, 110, 253, 0.2);
+    }
+
+    /* Cart icon gets its own circular background */
+    .home-products-scope .card-actions .btn-add-cart:not(.view-btn) i {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.2);
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    /* ----- Secondary "View" button ----- */
+    .home-products-scope .card-actions .view-btn {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+
+        padding: 0.65rem 1rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        line-height: 1.2;
+
+        background-color: #f1f3f5;
+        color: #333;
+        border: 1px solid #e0e0e0;
+        border-radius: 50px;
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+    }
+
+    .home-products-scope .card-actions .view-btn:hover {
+        background-color: #e7eaee;
+    }
+
+    /* Card wrapper as flex column */
+    .home-products-scope .card-link-wrapper {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    /* Card body must not overflow horizontally */
+    .home-products-scope .card-body {
+        overflow: hidden;
+        word-wrap: break-word;
+    }
+
+    /* Product title wraps instead of pushing buttons out */
+    .home-products-scope .card-title {
+        white-space: normal;
+        overflow-wrap: break-word;
+        word-break: break-word;
+    }
+}
+
+
+/* -------------------------------------------------------------- */
+/* 6. VERY SMALL DEVICES (≤ 360px)                                 */
+/* -------------------------------------------------------------- */
+@media (max-width: 360px) {
+    .home-products-scope .card-actions .btn-add-cart:not(.view-btn) {
+        font-size: 0.82rem;
+        padding: 0.6rem 0.85rem;
+    }
+
+    .home-products-scope .card-actions .view-btn {
+        font-size: 0.82rem;
+        padding: 0.55rem 0.85rem;
+    }
+
+    .featured-carousel-arrow {
+        width: 30px;
+        height: 30px;
+        font-size: 0.75rem;
+    }
+
+    .home-products-scope .featured-scroll-item .featured-product-image,
+    .home-products-scope .featured-scroll-item .card-img-top {
+        height: 180px;
+    }
+}

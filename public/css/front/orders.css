@@ -1,0 +1,63 @@
+/* public/css/front/orders.css */
+.profile-sidebar-header {
+    border-radius: 8px 8px 0 0;
+}
+
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.nav-pills .nav-link {
+    border-radius: 8px;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.nav-pills .nav-link:hover {
+    background: rgba(0, 218, 251, 0.1);
+}
+
+.nav-pills .nav-link.active {
+    background: linear-gradient(90deg, #00dafb 0%, #000113 100%);
+    color: white;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    font-weight: 500;
+    padding: 0.35rem 0.65rem;
+}
+
+.empty-state-icon {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+}

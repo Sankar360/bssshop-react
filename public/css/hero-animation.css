@@ -1,0 +1,779 @@
+/* public/assets/css/hero-animation.css */
+
+/* Apple Premium Hero */
+.hero-apple {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 700px;
+    background: linear-gradient(135deg, #0a0e1a 0%, #1a1a2e 50%, #16213e 100%);
+    overflow: hidden;
+}
+
+.hero-apple-container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+/* Category Panel - Apple Style */
+.category-panel-apple {
+    flex: 0 0 35%;
+    height: 100%;
+    padding: 2.5rem 2rem;
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+    background: rgba(10, 14, 26, 0.85);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.category-panel-inner {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.category-header {
+    margin-bottom: 1.5rem;
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 0.25rem 1rem;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+    border-radius: 50px;
+    color: #818cf8;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
+.category-title {
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.category-title .highlight {
+    background: linear-gradient(135deg, #818cf8, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.category-grid-apple {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+}
+
+.category-card-apple {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 0.8rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.category-card-apple:nth-child(1) { animation-delay: 0.2s; }
+.category-card-apple:nth-child(2) { animation-delay: 0.3s; }
+.category-card-apple:nth-child(3) { animation-delay: 0.4s; }
+.category-card-apple:nth-child(4) { animation-delay: 0.5s; }
+.category-card-apple:nth-child(5) { animation-delay: 0.6s; }
+.category-card-apple:nth-child(6) { animation-delay: 0.7s; }
+
+.category-card-apple::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+    transition: left 0.6s ease;
+}
+
+.category-card-apple:hover::before {
+    left: 100%;
+}
+
+.category-card-apple:hover {
+    transform: translateX(5px) scale(1.02);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 8px 30px rgba(99, 102, 241, 0.12);
+}
+
+.category-icon-apple {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: #818cf8;
+    transition: all 0.3s ease;
+}
+
+.category-card-apple:hover .category-icon-apple {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(139, 92, 246, 0.4));
+    transform: scale(1.1) rotate(-5deg);
+}
+
+.category-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.category-name {
+    display: block;
+    color: #e2e8f0;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.category-count {
+    display: block;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.65rem;
+}
+
+.category-arrow {
+    color: rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
+}
+
+.category-card-apple:hover .category-arrow {
+    color: #818cf8;
+    transform: translateX(4px);
+}
+
+/* Hero Text - Apple Style */
+.hero-text-apple {
+    opacity: 0;
+    animation: fadeInUp 0.8s ease 1s forwards;
+}
+
+.hero-badge-apple {
+    display: inline-block;
+    padding: 0.3rem 1rem;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 50px;
+    color: #818cf8;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.hero-title-apple {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+}
+
+.hero-title-apple .highlight {
+    background: linear-gradient(135deg, #818cf8, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-description-apple {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+    margin-bottom: 0;
+}
+
+/* Scene Wrapper */
+.scene-wrapper-apple {
+    flex: 1;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.scene-container-apple {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    padding: 2rem;
+}
+
+.scene-bg-apple {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+}
+
+.shop-bg-apple {
+    position: absolute;
+    width: 90%;
+    height: 80%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(180deg, rgba(26, 26, 46, 0.3) 0%, rgba(10, 14, 26, 0.5) 100%);
+    border-radius: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.shop-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(ellipse, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+}
+
+/* Person - Apple Style */
+.person-apple {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    position: relative;
+    z-index: 5;
+    flex: 1;
+    max-width: 200px;
+}
+
+.person-image {
+    width: 100px;
+    height: 130px;
+    position: relative;
+    filter: drop-shadow(0 10px 40px rgba(0, 0, 0, 0.3));
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.person-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.person-apple:hover .person-image {
+    transform: scale(1.05) translateY(-5px);
+}
+
+/* Basket */
+.basket-container {
+    margin-top: 0.5rem;
+    position: relative;
+}
+
+.basket {
+    width: 80px;
+    height: 60px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0 0 12px 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.basket-handle {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+}
+
+.basket-products {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    padding: 4px;
+    height: 100%;
+}
+
+.product-icon {
+    font-size: 12px;
+    text-align: center;
+    padding: 2px;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
+}
+
+.product-icon.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Price Counter */
+.price-counter {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-align: center;
+    margin-top: 0.3rem;
+    font-variant-numeric: tabular-nums;
+    transition: all 0.3s ease;
+}
+
+.price-counter.active {
+    color: #818cf8;
+}
+
+/* Person Smile */
+.person-smile {
+    font-size: 1.2rem;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    margin-top: 0.2rem;
+}
+
+.person-smile.show {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Person Label */
+.person-label {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.65rem;
+    font-weight: 500;
+    margin-top: 0.3rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Person Glow Effect */
+.person-apple::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(ellipse, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+    border-radius: 50%;
+}
+
+.person-apple:hover::before {
+    opacity: 1;
+}
+
+/* Welcome Message */
+.welcome-message {
+    position: absolute;
+    bottom: 5%;
+    left: 50%;
+    transform: translateX(-50%) translateY(30px);
+    z-index: 10;
+    text-align: center;
+    opacity: 0;
+}
+
+.welcome-title {
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(135deg, #818cf8, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.welcome-subtitle {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1rem;
+    margin: 0.3rem 0 1rem;
+}
+
+.welcome-btn {
+    display: inline-block;
+    padding: 0.6rem 2rem;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.welcome-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+    color: #fff;
+}
+
+/* Particles */
+.particles-apple {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.particle-apple {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: rgba(129, 140, 248, 0.15);
+    border-radius: 50%;
+    animation: floatParticle 12s ease-in-out infinite;
+}
+
+.particle-apple:nth-child(1) { left: 5%; animation-delay: 0s; }
+.particle-apple:nth-child(2) { left: 15%; animation-delay: 1s; }
+.particle-apple:nth-child(3) { left: 25%; animation-delay: 2s; }
+.particle-apple:nth-child(4) { left: 35%; animation-delay: 0.5s; }
+.particle-apple:nth-child(5) { left: 45%; animation-delay: 1.5s; }
+.particle-apple:nth-child(6) { left: 55%; animation-delay: 2.5s; }
+.particle-apple:nth-child(7) { left: 65%; animation-delay: 0.8s; }
+.particle-apple:nth-child(8) { left: 75%; animation-delay: 1.8s; }
+.particle-apple:nth-child(9) { left: 85%; animation-delay: 2.8s; }
+.particle-apple:nth-child(10) { left: 95%; animation-delay: 1.2s; }
+
+/* Status Overlay */
+.status-overlay-apple {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    right: 1.5rem;
+    z-index: 15;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    padding: 0.8rem 1.2rem;
+    pointer-events: none;
+}
+
+.status-content {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.status-icon {
+    font-size: 1.2rem;
+}
+
+.status-text {
+    flex: 1;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+.status-progress {
+    width: 100px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.status-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #6366f1, #a78bfa);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes floatParticle {
+    0%, 100% {
+        transform: translateY(0) translateX(0);
+        opacity: 0.1;
+    }
+    25% {
+        transform: translateY(-40px) translateX(8px);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translateY(-80px) translateX(-8px);
+        opacity: 0.1;
+    }
+    75% {
+        transform: translateY(-40px) translateX(8px);
+        opacity: 0.6;
+    }
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .category-panel-apple {
+        flex: 0 0 35%;
+        padding: 2rem 1.5rem;
+    }
+    
+    .hero-title-apple {
+        font-size: 2rem;
+    }
+    
+    .person-image {
+        width: 80px;
+        height: 105px;
+    }
+    
+    .basket {
+        width: 65px;
+        height: 50px;
+    }
+    
+    .product-icon {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 992px) {
+    .hero-apple-container {
+        flex-direction: column;
+    }
+    
+    .category-panel-apple {
+        flex: 0 0 45%;
+        height: 45vh;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 1.5rem;
+    }
+    
+    .category-panel-inner {
+        max-width: 100%;
+    }
+    
+    .category-grid-apple {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .category-card-apple {
+        padding: 0.6rem;
+        flex-direction: column;
+        text-align: center;
+        gap: 0.3rem;
+    }
+    
+    .category-arrow {
+        display: none;
+    }
+    
+    .scene-wrapper-apple {
+        height: 55vh;
+        min-height: 400px;
+    }
+    
+    .scene-container-apple {
+        gap: 0.5rem;
+        padding: 1rem;
+    }
+    
+    .hero-title-apple {
+        font-size: 1.6rem;
+    }
+    
+    .person-image {
+        width: 60px;
+        height: 80px;
+    }
+    
+    .basket {
+        width: 50px;
+        height: 40px;
+    }
+    
+    .product-icon {
+        font-size: 8px;
+    }
+    
+    .person-label {
+        font-size: 0.5rem;
+    }
+    
+    .welcome-title {
+        font-size: 1.5rem;
+    }
+    
+    .welcome-subtitle {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .category-panel-apple {
+        height: 40vh;
+        padding: 1rem;
+    }
+    
+    .category-header {
+        margin-bottom: 0.8rem;
+    }
+    
+    .category-title {
+        font-size: 1.1rem;
+    }
+    
+    .category-grid-apple {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.3rem;
+    }
+    
+    .category-card-apple {
+        padding: 0.4rem;
+    }
+    
+    .category-icon-apple {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        font-size: 0.8rem;
+    }
+    
+    .category-name {
+        font-size: 0.6rem;
+    }
+    
+    .category-count {
+        font-size: 0.5rem;
+    }
+    
+    .hero-title-apple {
+        font-size: 1.2rem;
+    }
+    
+    .hero-description-apple {
+        font-size: 0.8rem;
+    }
+    
+    .scene-wrapper-apple {
+        height: 45vh;
+        min-height: 300px;
+    }
+    
+    .scene-container-apple {
+        gap: 0.3rem;
+        padding: 0.5rem;
+    }
+    
+    .person-image {
+        width: 45px;
+        height: 60px;
+    }
+    
+    .basket {
+        width: 40px;
+        height: 32px;
+    }
+    
+    .basket-products {
+        gap: 1px;
+        padding: 2px;
+    }
+    
+    .product-icon {
+        font-size: 6px;
+    }
+    
+    .price-counter {
+        font-size: 0.5rem;
+    }
+    
+    .person-label {
+        font-size: 0.4rem;
+    }
+    
+    .person-smile {
+        font-size: 0.8rem;
+    }
+    
+    .welcome-title {
+        font-size: 1rem;
+    }
+    
+    .welcome-subtitle {
+        font-size: 0.6rem;
+    }
+    
+    .welcome-btn {
+        padding: 0.3rem 1rem;
+        font-size: 0.7rem;
+    }
+    
+    .status-overlay-apple {
+        bottom: 0.5rem;
+        left: 0.5rem;
+        right: 0.5rem;
+        padding: 0.3rem 0.5rem;
+        border-radius: 8px;
+    }
+    
+    .status-icon {
+        font-size: 0.8rem;
+    }
+    
+    .status-text {
+        font-size: 0.6rem;
+    }
+    
+    .status-progress {
+        width: 40px;
+        height: 2px;
+    }
+}

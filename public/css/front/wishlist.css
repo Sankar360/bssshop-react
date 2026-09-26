@@ -1,0 +1,142 @@
+/* public/css/front/wishlist.css */
+
+/* =========================================================
+   Wishlist page styles
+   ========================================================= */
+
+.wishlist-card {
+    border: 1px solid #eee;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    background: #fff;
+}
+
+.wishlist-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Image */
+.wishlist-product-image {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    background: #f8f9fa;
+    transition: transform 0.35s ease;
+}
+
+.wishlist-card:hover .wishlist-product-image {
+    transform: scale(1.04);
+}
+
+/* Remove (X) button */
+.wishlist-remove-btn,
+.wishlist-remove-btn-x {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    opacity: 0.92;
+    z-index: 2;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.wishlist-remove-btn:hover,
+.wishlist-remove-btn-x:hover {
+    opacity: 1;
+    transform: scale(1.08);
+}
+
+/* Card body */
+.wishlist-card .card-body {
+    padding: 1rem 1rem 1.15rem;
+}
+
+.wishlist-card .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.35;
+    margin-bottom: 0.5rem;
+    min-height: 2.7em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.wishlist-card .card-title a:hover {
+    color: #0d6efd !important;
+}
+
+.wishlist-card .card-text {
+    margin-bottom: 0.85rem;
+}
+
+/* Buttons */
+.wishlist-card .btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.add-to-cart-from-wishlist {
+    transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.add-to-cart-from-wishlist:active {
+    transform: scale(0.97);
+}
+
+/* Badges on the image */
+.wishlist-card .badge {
+    font-weight: 500;
+    font-size: 0.72rem;
+    padding: 0.35em 0.6em;
+    border-radius: 6px;
+}
+
+/* Removing animation */
+.item-removing {
+    opacity: 0.35;
+    transform: scale(0.96);
+    pointer-events: none;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+/* Summary card + empty-state card */
+.whtcrd {
+    border: 1px solid #eee;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+/* Big heart icon in empty state */
+.whtred {
+    color: #dc3545;
+    line-height: 1;
+}
+
+/* =========================================================
+   Responsive tweaks
+   ========================================================= */
+@media (max-width: 767.98px) {
+    .wishlist-product-image {
+        height: 190px;
+    }
+
+    .wishlist-card .card-title {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .wishlist-product-image {
+        height: 170px;
+    }
+}
