@@ -10,19 +10,19 @@ export default defineConfig({
 
     proxy: {
       '/api': {
-        target: 'http://bsshop-laravel',
+        target: 'http://172.18.0.3',
         changeOrigin: true,
         secure: false,
       },
 
       '/sanctum': {
-        target: 'http://bsshop-laravel',
+        target: 'http://172.18.0.3',
         changeOrigin: true,
         secure: false,
       },
 
       '/storage': {
-        target: 'http://bsshop-laravel',
+        target: 'http://172.18.0.3',
         changeOrigin: true,
         secure: false,
       },
