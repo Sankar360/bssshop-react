@@ -6,6 +6,8 @@ import { useAuth } from "../../context/AuthContext";
 import { showToast } from "../../utils/toast";
 import { addToCart } from "../../utils/cart";
 import "../../css/home-responsive.css";
+import { useWishlist } from "../../context/WishlistContext";
+
 
 const API_BASE = "/api";
 
@@ -133,44 +135,12 @@ const AddToCartButton = ({
     </button>
   );
 };
-
-/* ================================================================== */
-/*  WISHLIST HEART BUTTON                                              */
-/* ================================================================== */
 const WishlistButton = ({ productId, variantId = 0 }) => {
   const { loggedIn } = useAuth();
-  const [active, setActive] = useState(false);
+  const { isWishlisted, setLocal } = useWishlist();
   const [busy, setBusy] = useState(false);
 
-  /* Check initial state on mount if user is logged in */
-  useEffect(() => {
-    if (!loggedIn || !productId) {
-      setActive(false);
-      return;
-    }
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const data = await checkWishlistStatus([
-          { product_id: productId, variant_id: variantId },
-        ]);
-        const items = data?.data?.wishlist || data?.wishlist || [];
-        const found = items.some(
-          (i) =>
-            i.product_id === productId &&
-            (i.variant_id || 0) === (variantId || 0),
-        );
-        if (!cancelled) setActive(found);
-      } catch {
-        /* ignore */
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [loggedIn, productId, variantId]);
+  const active = isWishlisted(productId, variantId);
 
   const handleClick = async (e) => {
     e.preventDefault();
@@ -180,7 +150,6 @@ const WishlistButton = ({ productId, variantId = 0 }) => {
       showToast("Please log in to add items to your wishlist.", "info");
       return;
     }
-
     if (busy) return;
     setBusy(true);
 
@@ -191,19 +160,15 @@ const WishlistButton = ({ productId, variantId = 0 }) => {
         showToast("Please log in again.", "error");
         return;
       }
-
       if (res.success) {
         const added = res.action === "added";
-        setActive(added);
+        setLocal(productId, variantId, added);
         showToast(
           added ? "❤️ Added to wishlist!" : "Removed from wishlist",
           added ? "success" : "info",
         );
-
         window.dispatchEvent(
-          new CustomEvent("wishlist:updated", {
-            detail: { count: res.count },
-          }),
+          new CustomEvent("wishlist:updated", { detail: { count: res.count } }),
         );
       } else {
         showToast(res.message || "Something went wrong.", "error");
@@ -222,8 +187,6 @@ const WishlistButton = ({ productId, variantId = 0 }) => {
       className={`btn-wishlist position-absolute top-0 end-0 m-2 wishlist-btn ${
         active ? "active" : ""
       }`}
-      data-product-id={productId}
-      data-variant-id={variantId}
       aria-label={active ? "Remove from wishlist" : "Add to wishlist"}
       onClick={handleClick}
       disabled={busy}
