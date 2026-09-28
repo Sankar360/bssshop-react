@@ -12,24 +12,33 @@ import API_URL from "../../api/config";
 
 const API_BASE = API_URL;
 
+const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
+
 /* ------------------------------------------------------------------ */
 /*  Image URL resolver                                                 */
-/*  - Prefers `image_url` when the backend already provided a full URL */
-/*  - Falls back to building one from `image`                          */
 /* ------------------------------------------------------------------ */
 const imageUrl = (input) => {
   if (input && typeof input === "object") {
-    if (input.image_url) return input.image_url; // ✅ backend-resolved
+    if (input.image_url) {
+      // If backend gave a full URL, keep it. Otherwise prefix it.
+      const u = input.image_url;
+      if (/^https?:\/\//i.test(u)) return u;
+      if (u.startsWith("/")) return `${API_ORIGIN}${u}`;
+      return `${API_ORIGIN}/${u}`;
+    }
     if (input.image) return imageUrl(input.image);
   }
 
   const path = input;
   if (!path) return "/assets/images/default-product.jpg";
   if (/^https?:\/\//i.test(path)) return path;
-  if (path.startsWith("/")) return path;
-  if (/^storage\//i.test(path)) return `/${path}`;
-  if (/^(uploads|assets)\//i.test(path)) return `/${path}`;
-  return `/storage/${path.replace(/^\/+/, "")}`;
+
+  // 👇 THE FIX: prefix the backend origin instead of returning a relative path
+  if (path.startsWith("/")) return `${API_ORIGIN}${path}`;
+  if (/^storage\//i.test(path)) return `${API_ORIGIN}/${path}`;
+  if (/^(uploads|assets)\//i.test(path)) return `${API_ORIGIN}/${path}`;
+
+  return `${API_ORIGIN}/storage/${path.replace(/^\/+/, "")}`;
 };
 
 const calcDiscount = (product) => {

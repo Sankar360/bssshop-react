@@ -6,16 +6,19 @@ import { showToast } from '../../../utils/toast';
 
 const API_BASE = API_URL;
 
-/* ------------------------------------------------------------------ */
-/*  Image URL resolver                                                 */
-/* ------------------------------------------------------------------ */
+const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
+
+
 const imageUrl = (path) => {
     if (!path) return '/assets/images/default-product.jpg';
     if (/^https?:\/\//i.test(path)) return path;
-    if (path.startsWith('/')) return path;
-    if (/^storage\//i.test(path)) return `/${path}`;
-    if (/^assets\//i.test(path)) return `/${path}`;
-    return `/storage/${path.replace(/^\/+/, '')}`;
+
+    // 👇 Prefix the backend origin instead of returning relative paths
+    if (path.startsWith('/')) return `${API_ORIGIN}${path}`;
+    if (/^storage\//i.test(path)) return `${API_ORIGIN}/${path}`;
+    if (/^assets\//i.test(path)) return `${API_ORIGIN}/${path}`;
+
+    return `${API_ORIGIN}/storage/${path.replace(/^\/+/, '')}`;
 };
 
 /* Detect if a string is a hex color or CSS color name */
