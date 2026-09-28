@@ -4,17 +4,16 @@ import { Link } from "react-router-dom";
 import { toggleWishlist, checkWishlistStatus } from "../../../utils/wishlist";
 import { useAuth } from "../../../context/AuthContext";
 import { showToast } from "../../../utils/toast";
+import API_URL from "../../../api/config";
+const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
 
-/* ------------------------------------------------------------------ */
-/*  Image URL resolver                                                 */
-/* ------------------------------------------------------------------ */
 const imageUrl = (path) => {
-  if (!path) return "/assets/images/default-product.jpg";
-  if (/^https?:\/\//i.test(path)) return path;
-  if (path.startsWith("/")) return path;
-  if (/^storage\//i.test(path)) return `/${path}`;
-  if (/^assets\//i.test(path)) return `/${path}`;
-  return `/storage/${path.replace(/^\/+/, "")}`;
+    if (!path) return '';
+    if (/^https?:\/\//i.test(path)) return path;
+    if (path.startsWith('/')) return `${API_ORIGIN}${path}`;
+    if (/^storage\//i.test(path)) return `${API_ORIGIN}/${path}`;
+    if (/^(uploads|assets)\//i.test(path)) return `${API_ORIGIN}/${path}`;
+    return `${API_ORIGIN}/storage/${path.replace(/^\/+/, '')}`;
 };
 
 /* ------------------------------------------------------------------ */
