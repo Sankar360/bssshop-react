@@ -398,8 +398,7 @@ const ProductDetail = () => {
                                 alt={product.name}
                                 className="gallery-main-image"
                                 id="mainProductImage"
-                                onError={(e) => { e.currentTarget.src = '/assets/images/default-product.jpg'; }}
-                            />
+onError={(e) => { e.currentTarget.src = `${API_ORIGIN}/assets/images/default-product.jpg`; }}                            />
                         </div>
                         <div className="gallery-thumbnails" id="thumbnailContainer">
                             {thumbnails.length > 0 ? (
