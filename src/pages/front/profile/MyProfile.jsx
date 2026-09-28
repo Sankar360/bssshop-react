@@ -1,8 +1,9 @@
 // src/pages/front/profile/MyProfile.jsx
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import API_URL from "../../../api/config";
 
-const API_BASE = '/api';
+const API_BASE = API_URL;
 
 const MyProfile = () => {
     const navigate = useNavigate();

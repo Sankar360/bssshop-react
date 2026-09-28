@@ -1,9 +1,10 @@
 // src/pages/front/product/ProductDetail.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import API_URL from "../../../api/config";
 import { showToast } from '../../../utils/toast';
 
-const API_BASE = '/api';
+const API_BASE = API_URL;
 
 /* ------------------------------------------------------------------ */
 /*  Image URL resolver                                                 */

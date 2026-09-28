@@ -1,3 +1,4 @@
+import apiFetch from "../api/apiFetch";
 // src/context/AuthContext.jsx
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { getToken, getUser as readStoredUser, clearAuth } from '../utils/auth';
@@ -19,7 +20,7 @@ export function AuthProvider({ children }) {
         }
 
         try {
-            const res = await fetch('/api/auth/check', {
+            const res = await apiFetch('/auth/check', {
                 headers: {
                     Accept: 'application/json',
                     Authorization: `Bearer ${token}`,

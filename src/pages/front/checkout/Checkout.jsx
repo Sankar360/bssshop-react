@@ -3,8 +3,9 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { showToast } from "../../../utils/toast";
 import { loadRazorpay } from "../../../utils/razorpay";
+import API_URL from "../../../api/config";
 
-const API_BASE = "/api";
+const API_BASE = API_URL;
 
 // src/utils/imageUrl.js
 export const imageUrl = (path) => {

@@ -1,3 +1,4 @@
+import apiFetch from "../../../api/apiFetch";
 // src/components/admin/layouts/AdminLayout.jsx
 import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
@@ -56,12 +57,12 @@ const AdminLayout = () => {
         if (!token) return;
         const headers = { Accept: 'application/json', Authorization: `Bearer ${token}` };
 
-        fetch('/api/admin/profile/themes', { headers })
+        apiFetch('/admin/profile/themes', { headers })
             .then((r) => (r.ok ? r.json() : null))
             .then((d) => d?.success && setThemes(d.data || []))
             .catch(() => {});
 
-        fetch('/api/admin/profile/languages', { headers })
+        apiFetch('/admin/profile/languages', { headers })
             .then((r) => (r.ok ? r.json() : null))
             .then((d) => d?.success && setLanguages(d.data || []))
             .catch(() => {});

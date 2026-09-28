@@ -1,5 +1,6 @@
 // src/components/front/layouts/Header.jsx
 import React, { useEffect, useRef, useState } from "react";
+import API_URL from "../../../api/config";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { logout as apiLogout } from "../../../utils/auth";
 import { getWishlistCount } from "../../../utils/wishlist";
@@ -7,7 +8,7 @@ import { showToast } from "../../../utils/toast";
 import { useAuth } from "../../../context/AuthContext";
 import "../../../css/custom-header.css";
 
-const API_BASE = "/api";
+const API_BASE = API_URL;
 
 function getAuthToken() {
   return (
@@ -48,7 +49,7 @@ const Header = ({
   headerMenus = [],
   cartCount = 0,
   wishlistCount = 0,
-  searchEndpoint = "/api/search",
+  searchEndpoint = `${API_URL}/search`,
   searchPageUrl = "/search",
 }) => {
   const location = useLocation();

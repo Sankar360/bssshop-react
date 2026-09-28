@@ -1,5 +1,5 @@
 // src/utils/auth.js
-
+import apiFetch from "../api/apiFetch";
 const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'auth_user';
 
@@ -30,7 +30,7 @@ export async function logout() {
 
     if (token) {
         try {
-            await fetch('/api/auth/logout', {
+            await apiFetch('/auth/logout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

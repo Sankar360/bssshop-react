@@ -7,9 +7,10 @@ import { showToast } from "../../utils/toast";
 import { addToCart } from "../../utils/cart";
 import "../../css/home-responsive.css";
 import { useWishlist } from "../../context/WishlistContext";
+import API_URL from "../../api/config";
 
 
-const API_BASE = "/api";
+const API_BASE = API_URL;
 
 /* ------------------------------------------------------------------ */
 /*  Image URL resolver                                                 */

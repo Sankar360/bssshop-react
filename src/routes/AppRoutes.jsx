@@ -1,3 +1,4 @@
+import API_URL from "../api/config";
 // src/routes/AppRoutes.jsx
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -94,7 +95,7 @@ const ProtectedRoute = ({ children }) => {
                 return;
             }
             try {
-                const response = await fetch('/api/admin/check-auth', {
+                const response = await fetch(`${API_URL}/admin/check-auth`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         Accept: 'application/json',

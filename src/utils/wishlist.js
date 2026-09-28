@@ -1,3 +1,4 @@
+import apiFetch from "../api/apiFetch";
 // src/utils/wishlist.js
 import { getToken } from './auth';
 
@@ -18,7 +19,7 @@ const normalizeVariantId = (variantId) => {
 };
 
 export async function toggleWishlist(productId, variantId = 0) {
-    const res = await fetch('/api/wishlist/toggle', {
+    const res = await apiFetch('/wishlist/toggle', {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({
@@ -41,7 +42,7 @@ export async function checkWishlistStatus(items) {
         variant_id: normalizeVariantId(i.variant_id),
     }));
 
-    const res = await fetch('/api/wishlist/status', {
+    const res = await apiFetch('/wishlist/status', {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({ items: normalized }),
@@ -50,7 +51,7 @@ export async function checkWishlistStatus(items) {
 }
 
 export async function getWishlistCount() {
-    const res = await fetch('/api/wishlist/count', {
+    const res = await apiFetch('/wishlist/count', {
         headers: authHeaders(),
     });
     return res.json();

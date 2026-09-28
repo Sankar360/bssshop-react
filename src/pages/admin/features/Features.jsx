@@ -6,7 +6,7 @@ import {
 } from 'react-bootstrap-icons';
 import { showToast } from '../../../components/admin/layouts/Footer';
 
-const API_BASE = '/api/admin';
+const API_BASE = `${import.meta.env.VITE_API_URL}/admin`;
 const getToken = () => localStorage.getItem('admin_token') || '';
 const authHeaders = (json = true) => ({
     Accept: 'application/json',

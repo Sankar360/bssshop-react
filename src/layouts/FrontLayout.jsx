@@ -1,3 +1,4 @@
+import apiFetch from "../api/apiFetch";
 // src/layouts/FrontLayout.jsx
 import React, { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
@@ -34,7 +35,7 @@ const FrontLayout = () => {
         }
 
         // Fetch menus
-        fetch('/api/menus/frontend', { headers: { Accept: 'application/json' } })
+        apiFetch('/menus/frontend', { headers: { Accept: 'application/json' } })
             .then((r) => r.json())
             .then((data) => {
                 if (data.success) {
@@ -47,7 +48,7 @@ const FrontLayout = () => {
         // Fetch cart + wishlist counts (only if logged in)
         const token = localStorage.getItem('auth_token');
         if (token) {
-            fetch('/api/cart/summary', {
+            apiFetch('/cart/summary', {
                 headers: {
                     Accept: 'application/json',
                     Authorization: `Bearer ${token}`,
@@ -59,7 +60,7 @@ const FrontLayout = () => {
                 })
                 .catch(() => {});
 
-            fetch('/api/wishlist/count', {
+            apiFetch('/wishlist/count', {
                 headers: {
                     Accept: 'application/json',
                     Authorization: `Bearer ${token}`,
@@ -106,7 +107,7 @@ const FrontLayout = () => {
                 '<span class="spinner-border spinner-border-sm"></span> Adding...';
 
             try {
-                const res = await fetch('/api/cart/add', {
+                const res = await apiFetch('/cart/add', {
                     method: 'POST',
                     headers: {
                         Accept: 'application/json',
@@ -213,7 +214,7 @@ const FrontLayout = () => {
             btn.style.opacity = '0.6';
 
             try {
-                const res = await fetch('/api/wishlist/toggle', {
+                const res = await apiFetch('/wishlist/toggle', {
                     method: 'POST',
                     headers: {
                         Accept: 'application/json',
@@ -315,7 +316,7 @@ const FrontLayout = () => {
 
             if (items.length === 0) return;
 
-            fetch('/api/wishlist/status', {
+            apiFetch('/wishlist/status', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',

@@ -1,3 +1,4 @@
+import apiFetch from "../../../api/apiFetch";
 // src/components/admin/layouts/Footer.jsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { showToast } from '../../../utils/toast';   // ✅ single source of truth
@@ -199,7 +200,7 @@ const Footer = ({
             updateThemeButtonText(themeName);
 
             try {
-                const res = await fetch('/api/admin/profile/switch-theme', {
+                const res = await apiFetch('/admin/profile/switch-theme', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -243,7 +244,7 @@ const Footer = ({
             if (selector) selector.disabled = true;
 
             try {
-                const res = await fetch('/api/admin/profile/switch-language', {
+                const res = await apiFetch('/admin/profile/switch-language', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -312,7 +313,7 @@ const Footer = ({
         // 3. Badges
         const token = localStorage.getItem('admin_token');
         if (token) {
-            fetch('/api/admin/orders/check-updates', {
+            apiFetch('/admin/orders/check-updates', {
                 headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
             })
                 .then((r) => (r.ok ? r.json() : null))
@@ -331,7 +332,7 @@ const Footer = ({
                     if (badge) badge.style.display = 'none';
                 });
 
-            fetch('/api/admin/messages/check-updates', {
+            apiFetch('/admin/messages/check-updates', {
                 headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
             })
                 .then((r) => (r.ok ? r.json() : null))

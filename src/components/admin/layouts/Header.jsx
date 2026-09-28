@@ -1,5 +1,7 @@
 // src/components/admin/layouts/Header.jsx
-import React, { useState, useEffect } from 'react';                            // ← NEW: useEffect
+import apiFetch from "../../../api/apiFetch";
+import React, { useState, useEffect } from 'react';                            
+// ← NEW: useEffect
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     Shop, Palette, House, Person, Gear, BoxArrowRight, Speedometer2,
@@ -77,7 +79,7 @@ const Header = ({
         const token = localStorage.getItem('admin_token');
 
         try {
-            await fetch('/api/admin/logout', {
+            await apiFetch('/admin/logout', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',

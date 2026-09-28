@@ -13,7 +13,7 @@ import ImagesTab from './edit/ImagesTab';
 import VariantsTab from './edit/VariantsTab';
 import CombinationsTab from './edit/CombinationsTab';
 
-const API_BASE = '/api/admin';
+const API_BASE = `${import.meta.env.VITE_API_URL}/admin`;
 const getToken = () => localStorage.getItem('admin_token') || '';
 
 const ProductEdit = () => {

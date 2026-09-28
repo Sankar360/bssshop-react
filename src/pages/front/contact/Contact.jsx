@@ -1,8 +1,9 @@
 // src/pages/front/contact/Contact.jsx
 import React, { useState, useEffect } from 'react';
 import { showToast } from '../../../utils/toast';
+import API_URL from "../../../api/config";
 
-const API_BASE = '/api';
+const API_BASE = API_URL;
 
 const Contact = () => {
     const [form, setForm] = useState({

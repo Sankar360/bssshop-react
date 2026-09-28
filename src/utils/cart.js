@@ -1,5 +1,6 @@
 // src/utils/cart.js
-const API_BASE = '/api';
+import API_URL from "../api/config";
+const API_BASE = API_URL;
 
 /**
  * Read the auth token the same way your app does.

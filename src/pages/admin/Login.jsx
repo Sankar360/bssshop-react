@@ -1,3 +1,4 @@
+import API_URL from "../../api/config";
 // src/pages/admin/Login.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -45,7 +46,7 @@ const Login = () => {
             try {
                 const token = localStorage.getItem("admin_token");
                 if (token) {
-                    const response = await fetch("/api/admin/check-auth", {
+                    const response = await fetch(`${API_URL}/admin/check-auth`, {
                         headers: {
                             Authorization: `Bearer ${token}`,
                             Accept: "application/json",
@@ -66,7 +67,7 @@ const Login = () => {
         setLoading(true);
 
         try {
-            const response = await fetch("/api/admin/login", {
+            const response = await fetch(`${API_URL}/admin/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

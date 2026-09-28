@@ -5,9 +5,10 @@ import { createPortal } from "react-dom";
 import FeaturesSidebar from "../../../components/front/category/FeaturesSidebar";
 import ProductGrid from "../../../components/front/category/ProductGrid";
 import { showToast } from "../../../utils/toast";
+import API_URL from "../../../api/config";
 import { addToCart } from "../../../utils/cart";
 
-const API_BASE = "/api";
+const API_BASE = API_URL;
 
 /* ------------------------------------------------------------------ */
 /*  Case-insensitive slug compare                                     */

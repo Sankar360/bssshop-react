@@ -1,8 +1,9 @@
 // src/pages/front/search/Search.jsx
 import React, { useEffect, useState } from 'react';
+import API_URL from "../../../api/config";
 import { Link, useSearchParams } from 'react-router-dom';
 
-const API_BASE = '/api';
+const API_BASE = API_URL;
 
 const imageUrl = (path) => {
     if (!path) return '/assets/images/default-product.jpg';

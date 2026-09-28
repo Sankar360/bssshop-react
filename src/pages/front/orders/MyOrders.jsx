@@ -2,8 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { showToast } from "../../../utils/toast";
+import API_URL from "../../../api/config";
 
-const API_BASE = "/api";
+const API_BASE = API_URL;
 
 const formatRupee = (amount) => {
   const num = Number(amount) || 0;

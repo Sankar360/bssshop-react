@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 import { showToast } from "../../../utils/toast";
 import { addToCart } from "../../../utils/cart"; // ← ADD THIS
 
-const API_BASE = "/api";
+import API_URL from "../../../api/config";
+const API_BASE = API_URL;
 
 const imageUrl = (input) => {
   // Product/item object → prefer backend-resolved image_url first

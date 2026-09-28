@@ -1,7 +1,8 @@
 // src/context/SettingsContext.jsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import API_URL from "../api/config";
 
-const API_BASE = '/api';
+const API_BASE = API_URL;
 
 const defaultSettings = {
     site_name: 'BSSShop',

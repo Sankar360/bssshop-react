@@ -1,9 +1,10 @@
 // src/pages/front/cart/Cart.jsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import API_URL from "../../../api/config";
 import { showToast } from '../../../utils/toast';
 
-const API_BASE = '/api';
+const API_BASE = API_URL;
 
 const imageUrl = (path) => {
     if (!path) return '/assets/images/default-product.jpg';

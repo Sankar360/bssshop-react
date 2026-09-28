@@ -1,8 +1,9 @@
 // src/pages/front/blog/BlogDetail.jsx
 import React, { useEffect, useState } from 'react';
+import API_URL from "../../../api/config";
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
-const API_BASE = '/api';
+const API_BASE = API_URL;
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */

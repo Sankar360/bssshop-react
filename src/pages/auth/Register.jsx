@@ -1,3 +1,4 @@
+import apiFetch from "../../api/apiFetch";
 // src/pages/auth/Register.jsx
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -100,7 +101,7 @@ const Register = () => {
         setErrors({});
 
         try {
-            const res = await fetch('/api/auth/register', {
+            const res = await apiFetch('/auth/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

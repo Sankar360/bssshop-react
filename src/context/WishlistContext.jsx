@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useAuth } from "./AuthContext";
+import API_URL from "../api/config";
 
-const API_BASE = "/api";
+const API_BASE = API_URL;
 
 const WishlistContext = createContext({
   items: [],          // [{ product_id, variant_id }]

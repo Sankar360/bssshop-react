@@ -1,3 +1,4 @@
+import apiFetch from "../../api/apiFetch";
 // src/pages/auth/Login.jsx
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -34,7 +35,7 @@ const Login = () => {
         setErrors({});
 
         try {
-            const res = await fetch('/api/auth/login', {
+            const res = await apiFetch('/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
