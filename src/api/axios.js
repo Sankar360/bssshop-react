@@ -4,7 +4,11 @@ import API_URL from './config';
 
 const api = axios.create({
   baseURL: API_URL,
-  headers: { Accept: 'application/json' },
+  withCredentials: true, // ✅ IMPORTANT: send Laravel session cookie
+  headers: {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  },
 });
 
 /* -------- Get token with priority order -------- */
@@ -18,27 +22,29 @@ function getStoredToken() {
   );
 }
 
-/* -------- Request interceptor: attach token to every request -------- */
+/* -------- Request interceptor -------- */
 api.interceptors.request.use(
   (config) => {
     const token = getStoredToken();
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error),
 );
 
-/* -------- Response interceptor: handle 401 gracefully -------- */
+/* -------- Response interceptor -------- */
 api.interceptors.response.use(
   (res) => res,
   (error) => {
     const status = error.response?.status;
 
-    // If 401 and no admin session, this is a real logout
     if (status === 401) {
       const isAdmin = !!localStorage.getItem('admin_token');
+
       if (!isAdmin) {
         localStorage.removeItem('token');
         localStorage.removeItem('auth_token');
