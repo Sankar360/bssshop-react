@@ -1,153 +1,103 @@
 // src/contexts/AuthContext.jsx
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import api from '../api/axios';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import api, { ensureCsrf } from '../api/axios';
+import { getUser as getStoredUser, setUser as setStoredUser, clearAuth } from '../utils/auth';
 
 const AuthContext = createContext(null);
 
-const TOKEN_KEYS = ['token', 'auth_token', 'customer_token', 'admin_token'];
-const USER_KEYS = ['admin_user', 'auth_user', 'user', 'customer'];
-
-const readStoredToken = () => {
-  for (const k of TOKEN_KEYS) {
-    const v = localStorage.getItem(k);
-    if (v) return v;
-  }
-  return null;
-};
-
-const readStoredUser = () => {
-  for (const k of USER_KEYS) {
-    const raw = localStorage.getItem(k);
-    if (!raw) continue;
-    try {
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === 'object') return parsed;
-    } catch {
-      /* ignore */
-    }
-  }
-  return null;
-};
-
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(readStoredUser());
-  const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(readStoredToken());
+    const [user, setUser] = useState(null);
+    const [loggedIn, setLoggedIn] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [loading, setLoading] = useState(true);
 
-  /* Keep context in sync with localStorage if another tab updates it */
-  useEffect(() => {
-    const onStorage = (e) => {
-      if (TOKEN_KEYS.includes(e.key) || USER_KEYS.includes(e.key)) {
-        setToken(readStoredToken());
-        setUser(readStoredUser());
-      }
+    /* ------------------------------------------------------------- */
+    /* Ask the server who we are — source of truth is the session.    */
+    /* localStorage is only a UI cache; if the server says no, clear. */
+    /* ------------------------------------------------------------- */
+    const refreshAuth = useCallback(async () => {
+        try {
+            const { data } = await api.get('/auth/check');
+            if (data?.is_logged_in && data?.data?.user) {
+                setUser(data.data.user);
+                setLoggedIn(true);
+                setIsAdmin(data.data.user.role === 'admin');
+                setStoredUser(data.data.user);
+            } else {
+                setUser(null);
+                setLoggedIn(false);
+                setIsAdmin(false);
+                clearAuth();
+            }
+        } catch {
+            setUser(null);
+            setLoggedIn(false);
+            setIsAdmin(false);
+            clearAuth();
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        // Kick off CSRF so any subsequent POST works
+        ensureCsrf().finally(refreshAuth);
+    }, [refreshAuth]);
+
+    /* Called by login/register components after the API call succeeds */
+    const doLogin = async (email, password, remember = false) => {
+        await ensureCsrf();
+        const { data } = await api.post('/auth/login', { email, password, remember });
+        if (data?.success && data?.data?.user) {
+            setUser(data.data.user);
+            setLoggedIn(true);
+            setIsAdmin(data.data.user.role === 'admin');
+            setStoredUser(data.data.user);
+        }
+        return data;
     };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
 
-  useEffect(() => {
-    const storedUser = readStoredUser();
-    if (storedUser && token) {
-      setUser(storedUser);
-      setLoading(false);
-      return;
-    }
-    if (token) {
-      checkAuth();
-    } else {
-      setLoading(false);
-    }
-  }, [token]);
+    const doRegister = async (payload) => {
+        await ensureCsrf();
+        const { data } = await api.post('/auth/register', payload);
+        if (data?.success && data?.data?.user) {
+            setUser(data.data.user);
+            setLoggedIn(true);
+            setIsAdmin(false);
+            setStoredUser(data.data.user);
+        }
+        return data;
+    };
 
-  const checkAuth = async () => {
-    try {
-      const res = await api.get('/auth/check');
-      if (res.data.success) {
-        setUser(res.data.data.user);
-        localStorage.setItem('auth_user', JSON.stringify(res.data.data.user));
-      } else {
-        logout();
-      }
-    } catch {
-      const storedUser = readStoredUser();
-      if (!storedUser) logout();
-      else setUser(storedUser);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const doLogout = async () => {
+        try {
+            await ensureCsrf();
+            await api.post('/auth/logout');
+        } catch {
+            /* ignore */
+        }
+        setUser(null);
+        setLoggedIn(false);
+        setIsAdmin(false);
+        clearAuth();
+    };
 
-  const login = async (credentials) => {
-    const res = await api.post('/auth/login', credentials);
-    if (res.data.success) {
-      const { token: newToken, user: newUser } = res.data.data;
-      localStorage.setItem('token', newToken);
-      localStorage.setItem('auth_token', newToken);   // alias for legacy code
-      localStorage.setItem('auth_user', JSON.stringify(newUser));
-      api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
-      setToken(newToken);
-      setUser(newUser);
-      return res.data;
-    }
-    throw new Error(res.data.message);
-  };
-
-  const register = async (data) => {
-    const res = await api.post('/auth/register', data);
-    if (res.data.success) {
-      const { token: newToken, user: newUser } = res.data.data;
-      localStorage.setItem('token', newToken);
-      localStorage.setItem('auth_token', newToken);
-      localStorage.setItem('auth_user', JSON.stringify(newUser));
-      api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
-      setToken(newToken);
-      setUser(newUser);
-      return res.data;
-    }
-    throw new Error(res.data.message);
-  };
-
-  const logout = async () => {
-    try {
-      await api.post('/auth/logout');
-    } catch {
-      /* ignore */
-    } finally {
-      TOKEN_KEYS.forEach((k) => localStorage.removeItem(k));
-      USER_KEYS.forEach((k) => localStorage.removeItem(k));
-      delete api.defaults.headers.common['Authorization'];
-      setToken(null);
-      setUser(null);
-    }
-  };
-
-  const updateUser = (data) =>
-    setUser((prev) => ({ ...prev, ...data }));
-
-  return (
-    <AuthContext.Provider
-      value={{
+    const value = {
         user,
+        loggedIn,
+        isAdmin,
         loading,
-        token,
-        loggedIn: !!user && !!token,
-        isAuthenticated: !!user && !!token,
-        isAdmin: user?.role === 'admin',
-        login,
-        register,
-        logout,
-        updateUser,
-        checkAuth,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+        login: doLogin,
+        register: doRegister,
+        logout: doLogout,
+        refreshAuth,
+    };
+
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>');
-  return ctx;
+    const ctx = useContext(AuthContext);
+    if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>');
+    return ctx;
 };
