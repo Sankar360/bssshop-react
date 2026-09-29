@@ -9,20 +9,30 @@ const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
 
 const imageUrl = (path) => {
     if (!path) return '';
-    if (/^https?:\/\//i.test(path)) return path;
 
-    // HARDCODED fallback origin if API_ORIGIN is empty
-    const ORIGIN = API_ORIGIN || "https://bssshop-laravel-api.onrender.com";
-
-    const clean = path.replace(/^\/+/, '');
-
-    if (/^(storage|uploads|assets)\//i.test(clean)) {
-        return `${ORIGIN}/${clean}`;
+    // Already a complete URL
+    if (/^https?:\/\//i.test(path)) {
+        return path;
     }
 
-    return `${ORIGIN}/storage/${clean}`;
-};
+    // Handle /storage/...
+    if (path.startsWith('/')) {
+        return `${API_ORIGIN}${path}`;
+    }
 
+    // Handle storage/...
+    if (/^storage\//i.test(path)) {
+        return `${API_ORIGIN}/${path}`;
+    }
+
+    // Handle uploads/... or assets/...
+    if (/^(uploads|assets)\//i.test(path)) {
+        return `${API_ORIGIN}/${path}`;
+    }
+
+    // Default
+    return `${API_ORIGIN}/storage/${path.replace(/^\/+/, '')}`;
+};
 
 const Search = () => {
     const [params] = useSearchParams();
