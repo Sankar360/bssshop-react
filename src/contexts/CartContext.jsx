@@ -21,13 +21,13 @@ const CartContext = createContext({
 });
 
 export const CartProvider = ({ children }) => {
-  const { loggedIn } = useAuth();
+  const { loggedIn, isAdmin } = useAuth();
   const [items, setItems] = useState([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const refresh = useCallback(async () => {
-    if (!loggedIn) {
+    if (!loggedIn || isAdmin) {
       setItems([]);
       setCount(0);
       return;
@@ -49,7 +49,7 @@ export const CartProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [loggedIn]);
+  }, [loggedIn, isAdmin]);
 
   useEffect(() => {
     refresh();
