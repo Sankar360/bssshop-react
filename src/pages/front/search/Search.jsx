@@ -10,10 +10,16 @@ const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
 const imageUrl = (path) => {
     if (!path) return '';
     if (/^https?:\/\//i.test(path)) return path;
-    if (path.startsWith('/')) return `${API_ORIGIN}${path}`;
-    if (/^storage\//i.test(path)) return `${API_ORIGIN}/${path}`;
-    if (/^(uploads|assets)\//i.test(path)) return `${API_ORIGIN}/${path}`;
-    return `${API_ORIGIN}/storage/${path.replace(/^\/+/, '')}`;
+    
+    const clean = path.replace(/^\/+/, '');
+    
+    // If it already starts with storage/ or uploads/ or assets/
+    if (/^(storage|uploads|assets)\//i.test(clean)) {
+        return `${API_ORIGIN}/${clean}`;
+    }
+    
+    // Otherwise assume it lives in storage/
+    return `${API_ORIGIN}/storage/${clean}`;
 };
 
 
