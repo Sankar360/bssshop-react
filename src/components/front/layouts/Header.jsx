@@ -3,146 +3,55 @@ import React, { useEffect, useRef, useState } from "react";
 import API_URL from "../../../api/config";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { logout as apiLogout } from "../../../utils/auth";
-import { getWishlistCount } from "../../../utils/wishlist";
 import { showToast } from "../../../utils/toast";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useCart } from "../../../contexts/CartContext";
+import { useWishlist } from "../../../contexts/WishlistContext";
 import "../../../css/custom-header.css";
 
 const API_BASE = API_URL;
 const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
 
-
-function getAuthToken() {
-  return (
-    localStorage.getItem("auth_token") ||
-    localStorage.getItem("customer_token") ||
-    localStorage.getItem("token") ||
-    localStorage.getItem("admin_token") ||
-    null
-  );
-}
 function resolveImageUrl(input) {
   if (input && typeof input === "object") {
     if (input.image_url) return input.image_url;
     if (input.image) return resolveImageUrl(input.image);
   }
-
   const path = input;
   if (!path) return `${API_ORIGIN}/assets/images/default-product.jpg`;
-  if (/^https?:\/\//i.test(path)) return path; // already absolute
+  if (/^https?:\/\//i.test(path)) return path;
 
   const clean = path.replace(/^\/+/, "");
-
-  // Already has storage/ prefix
-  if (/^storage\//i.test(clean)) {
-    return `${API_ORIGIN}/${clean}`;
-  }
-
-  // uploads/... or assets/... → prefix with storage/
+  if (/^storage\//i.test(clean)) return `${API_ORIGIN}/${clean}`;
   if (/^(uploads|assets)\//i.test(clean)) {
     return `${API_ORIGIN}/storage/${clean}`;
   }
-
   return `${API_ORIGIN}/storage/${clean}`;
 }
 
-
 const Header = ({
   headerMenus = [],
-  cartCount = 0,
-  wishlistCount = 0,
   searchEndpoint = `${API_URL}/search`,
   searchPageUrl = "/search",
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, loggedIn, isAdmin, logout: doLogout } = useAuth();  
+  const { user, loggedIn, isAdmin, logout: doLogout } = useAuth();
+  const { count: cartCount } = useCart();
+  const { count: wishlistCount } = useWishlist();
+
   const userName = user?.name || "";
   const avatarUrl = user?.avatar ? resolveImageUrl(user.avatar) : "";
-  /* ---------- Live cart count ---------- */
-  const [liveCartCount, setLiveCartCount] = useState(cartCount);
-
-  useEffect(() => {
-    setLiveCartCount(cartCount);
-  }, [cartCount]);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const headers = { Accept: "application/json" };
-        const token = getAuthToken();
-        if (token) headers.Authorization = `Bearer ${token}`;
-        const res = await fetch(`${API_BASE}/cart/summary`, {
-          headers,
-          credentials: "include",
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        const serverCount = data?.data?.count ?? data?.count ?? null;
-        if (!cancelled && typeof serverCount === "number") {
-          setLiveCartCount(serverCount);
-        }
-      } catch {
-        /* silent */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [loggedIn]);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (typeof e.detail?.count === "number") {
-        setLiveCartCount(e.detail.count);
-      }
-    };
-    window.addEventListener("cart:updated", handler);
-    return () => window.removeEventListener("cart:updated", handler);
-  }, []);
-
-  /* ---------- Live wishlist count ---------- */
-  const [liveWishlistCount, setLiveWishlistCount] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    if (!loggedIn) {
-      setLiveWishlistCount(0);
-      return;
-    }
-    (async () => {
-      try {
-        const data = await getWishlistCount();
-        if (!cancelled && typeof data?.count === "number") {
-          setLiveWishlistCount(data.count);
-        }
-      } catch {
-        /* ignore */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [loggedIn]);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (typeof e.detail?.count === "number") {
-        setLiveWishlistCount(e.detail.count);
-      }
-    };
-    window.addEventListener("wishlist:updated", handler);
-    return () => window.removeEventListener("wishlist:updated", handler);
-  }, []);
 
   /* ---------- Logout ---------- */
   const handleLogout = async (e) => {
     if (e) e.preventDefault();
-    await apiLogout();
+    try {
+      await apiLogout();
+    } catch {
+      /* ignore */
+    }
     doLogout();
-    setLiveWishlistCount(0);
-    setLiveCartCount(0);
     showToast("You have been logged out.", "success");
     navigate("/");
   };
@@ -162,11 +71,9 @@ const Header = ({
   };
 
   const renderMenuLink = (menu) => {
-    const rawUrl = menu.url || "/";
-    const url = normaliseUrl(rawUrl);
+    const url = normaliseUrl(menu.url || "/");
     const isExternal = /^https?:\/\//i.test(url);
     const active = !isExternal && isActiveMenu(url);
-
     if (isExternal) {
       return (
         <a
@@ -208,20 +115,14 @@ const Header = ({
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* -------------------------------------------------------------- */
-  /*  Search box hook                                               */
-  /* -------------------------------------------------------------- */
-  const useSearchBox = (inputId, resultsId) => {
+  /* ---------- Search ---------- */
+  const useSearchBox = () => {
     const [query, setQuery] = useState("");
     const [open, setOpen] = useState(false);
     const [resultsHtml, setResultsHtml] = useState("");
     const [timeoutId, setTimeoutId] = useState(null);
-
-    // Refs
-    const resultsRef = useRef(null);   // outer popup
-    const scrollRef = useRef(null);    // scrollable content area
-
-    // Custom scrollbar state
+    const resultsRef = useRef(null);
+    const scrollRef = useRef(null);
     const [scrollState, setScrollState] = useState({
       visible: false,
       thumbTop: 0,
@@ -229,13 +130,11 @@ const Header = ({
       trackHeight: 0,
     });
 
-    /* ---------- measure content + update thumb ---------- */
     const updateScrollbar = () => {
       const el = scrollRef.current;
       if (!el) return;
       const { scrollTop, scrollHeight, clientHeight } = el;
-      const hasOverflow = scrollHeight > clientHeight + 1;
-      if (!hasOverflow) {
+      if (scrollHeight <= clientHeight + 1) {
         setScrollState({
           visible: false,
           thumbTop: 0,
@@ -255,7 +154,6 @@ const Header = ({
       setScrollState({ visible: true, thumbTop, thumbHeight, trackHeight });
     };
 
-    /* ---------- drag thumb to scroll ---------- */
     const dragRef = useRef({ active: false, startY: 0, startScrollTop: 0 });
 
     const onThumbPointerMove = (e) => {
@@ -295,25 +193,22 @@ const Header = ({
       window.addEventListener("pointerup", onThumbPointerUp);
     };
 
-    /* ---------- click track to jump ---------- */
     const onTrackPointerDown = (e) => {
       if (e.target.classList.contains("search-custom-thumb")) return;
       const el = scrollRef.current;
       if (!el) return;
       const rect = e.currentTarget.getBoundingClientRect();
       const clickY = e.clientY - rect.top;
-      const ratio = clickY / rect.height;
-      el.scrollTop = ratio * (el.scrollHeight - el.clientHeight);
+      el.scrollTop =
+        (clickY / rect.height) * (el.scrollHeight - el.clientHeight);
       updateScrollbar();
     };
 
-    /* ---------- re-measure when results change ---------- */
     useEffect(() => {
       const id = requestAnimationFrame(updateScrollbar);
       return () => cancelAnimationFrame(id);
     }, [resultsHtml, open]);
 
-    /* ---------- recalc on resize ---------- */
     useEffect(() => {
       const onResize = () => updateScrollbar();
       window.addEventListener("resize", onResize);
@@ -335,11 +230,11 @@ const Header = ({
         .then((r) => r.json())
         .then((response) => {
           const products =
-            response && response.data && Array.isArray(response.data.products)
+            response?.data && Array.isArray(response.data.products)
               ? response.data.products
-              : Array.isArray(response.products)
-                ? response.products
-                : [];
+              : Array.isArray(response?.products)
+              ? response.products
+              : [];
 
           if (response.success && products.length > 0) {
             let html = "";
@@ -466,10 +361,7 @@ const Header = ({
     };
   };
 
-  const desktopSearch = useSearchBox("searchInput", "searchResults");
-
-  /* NOTE: body-scroll lock intentionally removed — it blocked trackpad
-     scrolling inside the popup on macOS/Safari. */
+  const desktopSearch = useSearchBox();
 
   const AvatarIcon = () =>
     avatarUrl ? (
@@ -486,7 +378,6 @@ const Header = ({
   return (
     <header className="custom-main-header" id="mainNav">
       <div className="custom-header-inner">
-        {/* LEFT: Logo + Nav */}
         <div className="custom-header-left">
           <Link className="custom-brand" to="/">
             <i className="bi bi-shop"></i> BSSShop
@@ -500,7 +391,6 @@ const Header = ({
           </ul>
         </div>
 
-        {/* MIDDLE: Search */}
         <div className="custom-header-search">
           <div className="search-wrapper">
             <i className="bi bi-search search-icon"></i>
@@ -518,7 +408,6 @@ const Header = ({
                   desktopSearch.setOpen(true);
               }}
             />
-
             <div
               className={`search-results ${desktopSearch.open ? "active" : ""}`}
               id="searchResults"
@@ -532,8 +421,6 @@ const Header = ({
               >
                 <i className="bi bi-x-lg"></i>
               </button>
-
-              {/* Scrollable content — ref + onScroll attached */}
               <div
                 className="search-results-scroll"
                 ref={desktopSearch.scrollRef}
@@ -545,8 +432,6 @@ const Header = ({
                   }}
                 />
               </div>
-
-              {/* Custom always-visible scrollbar */}
               {desktopSearch.scrollState.visible && (
                 <div
                   className="search-custom-scrollbar"
@@ -566,7 +451,6 @@ const Header = ({
           </div>
         </div>
 
-        {/* RIGHT: Icons */}
         <div className="custom-header-right">
           <ul className="custom-nav-icons">
             {isAdmin && (
@@ -658,7 +542,7 @@ const Header = ({
               >
                 <i className="bi bi-cart fs-5"></i>
                 <span className="badge bg-danger rounded-pill cart-count">
-                  {liveCartCount}
+                  {cartCount}
                 </span>
               </Link>
             </li>
@@ -669,7 +553,7 @@ const Header = ({
               >
                 <i className="bi bi-heart fs-5"></i>
                 <span className="badge bg-danger rounded-pill wishlist-count">
-                  {liveWishlistCount}
+                  {wishlistCount}
                 </span>
               </Link>
             </li>

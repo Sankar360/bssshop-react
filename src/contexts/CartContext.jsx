@@ -1,90 +1,153 @@
-// src/contexts/CartContext.jsx
+// src/contexts/AuthContext.jsx
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { cartService } from '../api/services/cartService';
+import api from '../api/axios';
 
-const CartContext = createContext();
+const AuthContext = createContext(null);
 
-export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [count, setCount] = useState(0);
-  const [subtotal, setSubtotal] = useState(0);
+const TOKEN_KEYS = ['token', 'auth_token', 'customer_token', 'admin_token'];
+const USER_KEYS = ['admin_user', 'auth_user', 'user', 'customer'];
 
-  const loadCart = async () => {
-    setLoading(true);
+const readStoredToken = () => {
+  for (const k of TOKEN_KEYS) {
+    const v = localStorage.getItem(k);
+    if (v) return v;
+  }
+  return null;
+};
+
+const readStoredUser = () => {
+  for (const k of USER_KEYS) {
+    const raw = localStorage.getItem(k);
+    if (!raw) continue;
     try {
-      const response = await cartService.getCart();
-      if (response.data.success) {
-        setCart(response.data.data);
-        setCount(response.data.data.cart_count || 0);
-        setSubtotal(response.data.data.subtotal || 0);
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') return parsed;
+    } catch {
+      /* ignore */
+    }
+  }
+  return null;
+};
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(readStoredUser());
+  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(readStoredToken());
+
+  /* Keep context in sync with localStorage if another tab updates it */
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (TOKEN_KEYS.includes(e.key) || USER_KEYS.includes(e.key)) {
+        setToken(readStoredToken());
+        setUser(readStoredUser());
       }
-    } catch (error) {
-      console.error('Failed to load cart:', error);
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  useEffect(() => {
+    const storedUser = readStoredUser();
+    if (storedUser && token) {
+      setUser(storedUser);
+      setLoading(false);
+      return;
+    }
+    if (token) {
+      checkAuth();
+    } else {
+      setLoading(false);
+    }
+  }, [token]);
+
+  const checkAuth = async () => {
+    try {
+      const res = await api.get('/auth/check');
+      if (res.data.success) {
+        setUser(res.data.data.user);
+        localStorage.setItem('auth_user', JSON.stringify(res.data.data.user));
+      } else {
+        logout();
+      }
+    } catch {
+      const storedUser = readStoredUser();
+      if (!storedUser) logout();
+      else setUser(storedUser);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadCart();
-  }, []);
-
-  const addProduct = async (productId, quantity = 1, variantId = null) => {
-    const response = await cartService.addProduct(productId, quantity, variantId);
-    if (response.data.success) {
-      await loadCart();
+  const login = async (credentials) => {
+    const res = await api.post('/auth/login', credentials);
+    if (res.data.success) {
+      const { token: newToken, user: newUser } = res.data.data;
+      localStorage.setItem('token', newToken);
+      localStorage.setItem('auth_token', newToken);   // alias for legacy code
+      localStorage.setItem('auth_user', JSON.stringify(newUser));
+      api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+      setToken(newToken);
+      setUser(newUser);
+      return res.data;
     }
-    return response.data;
+    throw new Error(res.data.message);
   };
 
-  const updateQuantity = async (key, quantity) => {
-    const response = await cartService.updateQuantity(key, quantity);
-    if (response.data.success) {
-      await loadCart();
+  const register = async (data) => {
+    const res = await api.post('/auth/register', data);
+    if (res.data.success) {
+      const { token: newToken, user: newUser } = res.data.data;
+      localStorage.setItem('token', newToken);
+      localStorage.setItem('auth_token', newToken);
+      localStorage.setItem('auth_user', JSON.stringify(newUser));
+      api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+      setToken(newToken);
+      setUser(newUser);
+      return res.data;
     }
-    return response.data;
+    throw new Error(res.data.message);
   };
 
-  const removeItem = async (key) => {
-    const response = await cartService.removeItem(key);
-    if (response.data.success) {
-      await loadCart();
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch {
+      /* ignore */
+    } finally {
+      TOKEN_KEYS.forEach((k) => localStorage.removeItem(k));
+      USER_KEYS.forEach((k) => localStorage.removeItem(k));
+      delete api.defaults.headers.common['Authorization'];
+      setToken(null);
+      setUser(null);
     }
-    return response.data;
   };
 
-  const clearCart = async () => {
-    const response = await cartService.clear();
-    if (response.data.success) {
-      await loadCart();
-    }
-    return response.data;
-  };
+  const updateUser = (data) =>
+    setUser((prev) => ({ ...prev, ...data }));
 
   return (
-    <CartContext.Provider
+    <AuthContext.Provider
       value={{
-        cart,
+        user,
         loading,
-        count,
-        subtotal,
-        loadCart,
-        addProduct,
-        updateQuantity,
-        removeItem,
-        clearCart,
+        token,
+        loggedIn: !!user && !!token,
+        isAuthenticated: !!user && !!token,
+        isAdmin: user?.role === 'admin',
+        login,
+        register,
+        logout,
+        updateUser,
+        checkAuth,
       }}
     >
       {children}
-    </CartContext.Provider>
+    </AuthContext.Provider>
   );
 };
 
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
-  return context;
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>');
+  return ctx;
 };

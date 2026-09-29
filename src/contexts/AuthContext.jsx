@@ -4,27 +4,29 @@ import api from '../api/axios';
 
 const AuthContext = createContext(null);
 
-/* ---- helpers to read either admin or customer session ---- */
-const readStoredToken = () =>
-  localStorage.getItem('token') ||
-  localStorage.getItem('auth_token') ||
-  localStorage.getItem('customer_token') ||
-  localStorage.getItem('admin_token') ||
-  null;
+const TOKEN_KEYS = ['token', 'auth_token', 'customer_token', 'admin_token'];
+const USER_KEYS = ['admin_user', 'auth_user', 'user', 'customer'];
+
+const readStoredToken = () => {
+  for (const k of TOKEN_KEYS) {
+    const v = localStorage.getItem(k);
+    if (v) return v;
+  }
+  return null;
+};
 
 const readStoredUser = () => {
-  const raw =
-    localStorage.getItem('admin_user') ||
-    localStorage.getItem('auth_user') ||
-    localStorage.getItem('user') ||
-    localStorage.getItem('customer') ||
-    null;
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
+  for (const k of USER_KEYS) {
+    const raw = localStorage.getItem(k);
+    if (!raw) continue;
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') return parsed;
+    } catch {
+      /* ignore */
+    }
   }
+  return null;
 };
 
 export const AuthProvider = ({ children }) => {
@@ -32,8 +34,19 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(readStoredToken());
 
+  /* Keep context in sync with localStorage if another tab updates it */
   useEffect(() => {
-    // If we already have a stored user (admin OR customer), trust it immediately
+    const onStorage = (e) => {
+      if (TOKEN_KEYS.includes(e.key) || USER_KEYS.includes(e.key)) {
+        setToken(readStoredToken());
+        setUser(readStoredUser());
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  useEffect(() => {
     const storedUser = readStoredUser();
     if (storedUser && token) {
       setUser(storedUser);
@@ -49,14 +62,14 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const response = await api.get('/auth/check');
-      if (response.data.success) {
-        setUser(response.data.data.user);
+      const res = await api.get('/auth/check');
+      if (res.data.success) {
+        setUser(res.data.data.user);
+        localStorage.setItem('auth_user', JSON.stringify(res.data.data.user));
       } else {
         logout();
       }
     } catch {
-      // Don't wipe admin session on a failed /me call
       const storedUser = readStoredUser();
       if (!storedUser) logout();
       else setUser(storedUser);
@@ -66,61 +79,60 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (credentials) => {
-    const response = await api.post('/auth/login', credentials);
-    if (response.data.success) {
-      const { token: newToken, user: newUser } = response.data.data;
+    const res = await api.post('/auth/login', credentials);
+    if (res.data.success) {
+      const { token: newToken, user: newUser } = res.data.data;
       localStorage.setItem('token', newToken);
+      localStorage.setItem('auth_token', newToken);   // alias for legacy code
+      localStorage.setItem('auth_user', JSON.stringify(newUser));
       api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
       setToken(newToken);
       setUser(newUser);
-      return response.data;
+      return res.data;
     }
-    throw new Error(response.data.message);
+    throw new Error(res.data.message);
   };
 
   const register = async (data) => {
-    const response = await api.post('/auth/register', data);
-    if (response.data.success) {
-      const { token: newToken, user: newUser } = response.data.data;
+    const res = await api.post('/auth/register', data);
+    if (res.data.success) {
+      const { token: newToken, user: newUser } = res.data.data;
       localStorage.setItem('token', newToken);
+      localStorage.setItem('auth_token', newToken);
+      localStorage.setItem('auth_user', JSON.stringify(newUser));
       api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
       setToken(newToken);
       setUser(newUser);
-      return response.data;
+      return res.data;
     }
-    throw new Error(response.data.message);
+    throw new Error(res.data.message);
   };
 
   const logout = async () => {
     try {
       await api.post('/auth/logout');
     } catch {
-      // ignore
+      /* ignore */
     } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('auth_user');
-      localStorage.removeItem('customer_token');
-      localStorage.removeItem('admin_token');
-      localStorage.removeItem('admin_user');
-      localStorage.removeItem('user');
+      TOKEN_KEYS.forEach((k) => localStorage.removeItem(k));
+      USER_KEYS.forEach((k) => localStorage.removeItem(k));
+      delete api.defaults.headers.common['Authorization'];
       setToken(null);
       setUser(null);
-      delete api.defaults.headers.common['Authorization'];
     }
   };
 
-  const updateUser = (updatedData) => {
-    setUser((prev) => ({ ...prev, ...updatedData }));
-  };
+  const updateUser = (data) =>
+    setUser((prev) => ({ ...prev, ...data }));
 
   return (
     <AuthContext.Provider
       value={{
         user,
         loading,
-        loggedIn: !!user,
-        isAuthenticated: !!user,
+        token,
+        loggedIn: !!user && !!token,
+        isAuthenticated: !!user && !!token,
         isAdmin: user?.role === 'admin',
         login,
         register,
@@ -136,8 +148,6 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
-  if (!ctx) {
-    throw new Error('useAuth must be used inside <AuthProvider>');
-  }
+  if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>');
   return ctx;
 };
