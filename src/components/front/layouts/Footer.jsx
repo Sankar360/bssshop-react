@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { showToast } from '../../../utils/toast';
-import { useSettings } from '../../../context/SettingsContext';
+import { useSettings } from '../../../contexts/SettingsContext';
 
 const Footer = ({ footerMenus = [] }) => {
     const year = new Date().getFullYear();

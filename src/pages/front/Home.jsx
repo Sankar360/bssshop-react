@@ -2,11 +2,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { toggleWishlist, checkWishlistStatus } from "../../utils/wishlist";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { showToast } from "../../utils/toast";
 import { addToCart } from "../../utils/cart";
 import "../../css/home-responsive.css";
-import { useWishlist } from "../../context/WishlistContext";
+import { useWishlist } from "../../contexts/WishlistContext";
 import API_URL from "../../api/config";
 
 

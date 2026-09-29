@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toggleWishlist, checkWishlistStatus } from "../../../utils/wishlist";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "../../../contexts/AuthContext";
 import { showToast } from "../../../utils/toast";
 import API_URL from "../../../api/config";
 const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");

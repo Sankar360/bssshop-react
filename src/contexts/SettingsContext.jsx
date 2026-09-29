@@ -1,4 +1,4 @@
-// src/context/SettingsContext.jsx
+// src/contexts/SettingsContext.jsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import API_URL from "../api/config";
 
