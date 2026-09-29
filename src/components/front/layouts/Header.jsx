@@ -10,6 +10,9 @@ import "../../../css/custom-header.css";
 
 const API_BASE = API_URL;
 
+const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
+
+
 function getAuthToken() {
   return (
     localStorage.getItem("auth_token") ||
@@ -19,10 +22,6 @@ function getAuthToken() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Image URL resolver                                                 */
-/*  Turns relative paths into /storage/uploads/... URLs                */
-/* ------------------------------------------------------------------ */
 function resolveImageUrl(input) {
   if (input && typeof input === "object") {
     if (input.image_url) return input.image_url;
@@ -30,20 +29,24 @@ function resolveImageUrl(input) {
   }
 
   const path = input;
-  if (!path) return "/assets/images/default-product.jpg";
-  if (/^https?:\/\//i.test(path)) return path; // already absolute URL
-  if (path.startsWith("/storage/")) return path; // already correct
-  if (path.startsWith("/")) return path; // absolute path from server
+  if (!path) return `${API_ORIGIN}/assets/images/default-product.jpg`;
+  if (/^https?:\/\//i.test(path)) return path; // already absolute
 
-  // Strip any leading "storage/" so we don't double-prefix
-  const cleaned = path.replace(/^storage\//i, "");
+  const clean = path.replace(/^\/+/, "");
 
-  if (/^(uploads|assets)\//i.test(cleaned)) {
-    return `/storage/${cleaned}`;
+  // Already has storage/ prefix
+  if (/^storage\//i.test(clean)) {
+    return `${API_ORIGIN}/${clean}`;
   }
 
-  return `/storage/${cleaned.replace(/^\/+/, "")}`;
+  // uploads/... or assets/... → prefix with storage/
+  if (/^(uploads|assets)\//i.test(clean)) {
+    return `${API_ORIGIN}/storage/${clean}`;
+  }
+
+  return `${API_ORIGIN}/storage/${clean}`;
 }
+
 
 const Header = ({
   headerMenus = [],
