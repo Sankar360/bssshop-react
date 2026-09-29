@@ -46,16 +46,27 @@ export const WishlistProvider = ({ children }) => {
 
   /* 🆕 Listen for wishlist:updated from utils/wishlist.js and other places */
   useEffect(() => {
+
+      let debounceTimer = null;
+
+
     const handler = (e) => {
       // If the event carries a count, use it directly (fast)
       if (typeof e.detail?.count === 'number') {
         setCount(e.detail.count);
       }
-      // Also refresh to sync the items list
-      refresh();
+      // Debounce the refresh — only run once even if multiple events fire
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        refresh();
+        debounceTimer = null;
+      }, 400); 
     };
     window.addEventListener('wishlist:updated', handler);
-    return () => window.removeEventListener('wishlist:updated', handler);
+    return () => {
+      window.removeEventListener('wishlist:updated', handler);
+      if (debounceTimer) clearTimeout(debounceTimer);
+    };
   }, [refresh]);
 
   const isWishlisted = (productId, variantId = 0) =>

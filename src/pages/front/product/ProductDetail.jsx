@@ -327,16 +327,12 @@ const ProductDetail = () => {
                         : prev.filter((k) => k !== key)
                 );
 
-                if (data.count !== undefined) {
-                    document
-                        .querySelectorAll(
-                            '.wishlist-count, .wishlist-badge, .nav-wishlist-count'
-                        )
-                        .forEach((el) => {
-                            el.textContent = data.count;
-                            el.style.display = data.count > 0 ? '' : 'none';
-                        });
-                }
+                // 🆕 Dispatch the event so WishlistContext picks it up
+                window.dispatchEvent(
+                    new CustomEvent('wishlist:updated', {
+                    detail: { count: data.count ?? 0 },
+                    })
+                );
 
                 showToast(
                     data.action === 'added'
