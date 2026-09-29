@@ -5,7 +5,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { logout as apiLogout } from "../../../utils/auth";
 import { getWishlistCount } from "../../../utils/wishlist";
 import { showToast } from "../../../utils/toast";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "../../../contexts/AuthContext";
 import "../../../css/custom-header.css";
 
 const API_BASE = API_URL;

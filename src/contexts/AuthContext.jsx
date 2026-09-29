@@ -32,6 +32,13 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(readStoredToken());
 
+  console.log('[AuthContext] initial', {
+    storedToken: readStoredToken(),
+    storedUser: readStoredUser(),
+    stateUser: user,
+    stateToken: token,
+  });
+  
   useEffect(() => {
     // If we already have a stored user (admin OR customer), trust it immediately
     const storedUser = readStoredUser();
