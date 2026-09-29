@@ -5,14 +5,17 @@ import { Link, useSearchParams } from 'react-router-dom';
 
 const API_BASE = API_URL;
 
+const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
+
 const imageUrl = (path) => {
-    if (!path) return '/assets/images/default-product.jpg';
+    if (!path) return '';
     if (/^https?:\/\//i.test(path)) return path;
-    if (path.startsWith('/')) return path;
-    if (/^storage\//i.test(path)) return `/${path}`;
-    if (/^(uploads|assets)\//i.test(path)) return `/${path}`;
-    return `/storage/${path.replace(/^\/+/, '')}`;
+    if (path.startsWith('/')) return `${API_ORIGIN}${path}`;
+    if (/^storage\//i.test(path)) return `${API_ORIGIN}/${path}`;
+    if (/^(uploads|assets)\//i.test(path)) return `${API_ORIGIN}/${path}`;
+    return `${API_ORIGIN}/storage/${path.replace(/^\/+/, '')}`;
 };
+
 
 const Search = () => {
     const [params] = useSearchParams();
