@@ -57,11 +57,9 @@ const Header = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, loggedIn, isAdmin, doLogout } = useAuth();
-
+  const { user, loggedIn, isAdmin, logout: doLogout } = useAuth();  
   const userName = user?.name || "";
-  const avatarUrl = user?.avatar || "";
-
+  const avatarUrl = user?.avatar ? resolveImageUrl(user.avatar) : "";
   /* ---------- Live cart count ---------- */
   const [liveCartCount, setLiveCartCount] = useState(cartCount);
 

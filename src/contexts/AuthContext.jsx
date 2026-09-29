@@ -5,12 +5,41 @@ import { authService } from '../api/services/authService';
 
 const AuthContext = createContext();
 
+/* ---- helpers to read either admin or customer session ---- */
+const readStoredToken = () =>
+  localStorage.getItem('token') ||
+  localStorage.getItem('auth_token') ||
+  localStorage.getItem('customer_token') ||
+  localStorage.getItem('admin_token') ||
+  null;
+
+const readStoredUser = () => {
+  const raw =
+    localStorage.getItem('admin_user') ||
+    localStorage.getItem('user') ||
+    localStorage.getItem('customer') ||
+    null;
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(readStoredUser());
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [token, setToken] = useState(readStoredToken());
 
   useEffect(() => {
+    // If we already have a stored user (admin OR customer), trust it immediately
+    const storedUser = readStoredUser();
+    if (storedUser && token) {
+      setUser(storedUser);
+      setLoading(false);
+      return;
+    }
     if (token) {
       checkAuth();
     } else {
@@ -27,7 +56,10 @@ export const AuthProvider = ({ children }) => {
         logout();
       }
     } catch (error) {
-      logout();
+      // Don't wipe admin session on a failed /me call
+      const storedUser = readStoredUser();
+      if (!storedUser) logout();
+      else setUser(storedUser);
     } finally {
       setLoading(false);
     }
@@ -63,9 +95,14 @@ export const AuthProvider = ({ children }) => {
     try {
       await authService.logout();
     } catch (error) {
-      // Ignore logout errors
+      // ignore
     } finally {
       localStorage.removeItem('token');
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('customer_token');
+      localStorage.removeItem('admin_token');
+      localStorage.removeItem('admin_user');
+      localStorage.removeItem('user');
       setToken(null);
       setUser(null);
       delete api.defaults.headers.common['Authorization'];
@@ -80,6 +117,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{
       user,
       loading,
+      loggedIn: !!user,                      // ← add this; Header uses it
       isAuthenticated: !!user,
       isAdmin: user?.role === 'admin',
       login,
