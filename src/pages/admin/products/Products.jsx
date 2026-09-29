@@ -4,9 +4,11 @@ import { Link } from 'react-router-dom';
 import { PlusCircle, Search, XCircle, Pencil, Trash, Tag, Box, ExclamationTriangle } from 'react-bootstrap-icons';
 import { showToast } from '../../../utils/toast';
 import API_URL from "../../../api/config";
+import { productImage as imageUrl } from "../../../utils/productImage";
 
 
-const API_BASE = `${import.meta.env.VITE_API_URL}/admin`;
+
+const API_BASE = API_URL + "/admin";
 
 
 const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
