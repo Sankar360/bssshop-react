@@ -147,7 +147,7 @@ const AddToCartButton = ({
 };
 const WishlistButton = ({ productId, variantId = 0 }) => {
   const { loggedIn } = useAuth();
-  const { isWishlisted, setLocal } = useWishlist();
+  const { isWishlisted, toggle } = useWishlist();   // ← use toggle, not setLocal
   const [busy, setBusy] = useState(false);
 
   const active = isWishlisted(productId, variantId);
@@ -164,28 +164,16 @@ const WishlistButton = ({ productId, variantId = 0 }) => {
     setBusy(true);
 
     try {
-      const res = await toggleWishlist(productId, variantId);
-
-      if (res.unauthenticated) {
-        showToast("Please log in again.", "error");
-        return;
-      }
-      if (res.success) {
-        const added = res.action === "added";
-        setLocal(productId, variantId, added);
-        showToast(
-          added ? "❤️ Added to wishlist!" : "Removed from wishlist",
-          added ? "success" : "info",
-        );
-        window.dispatchEvent(
-          new CustomEvent("wishlist:updated", { detail: { count: res.count } }),
-        );
-      } else {
-        showToast(res.message || "Something went wrong.", "error");
-      }
+      // toggle() handles the API call + state update + event dispatch
+      const res = await toggle({ product_id: productId, variant_id: variantId });
+      const added = res?.action === "added";
+      showToast(
+        added ? "❤️ Added to wishlist!" : "Removed from wishlist",
+        added ? "success" : "info",
+      );
     } catch (err) {
       console.error(err);
-      showToast("Something went wrong. Please try again.", "error");
+      showToast(err?.message || "Something went wrong. Please try again.", "error");
     } finally {
       setBusy(false);
     }
