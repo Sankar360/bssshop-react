@@ -2,8 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import { Images, CloudUpload, StarFill, Star, Trash } from 'react-bootstrap-icons';
 import { showToast } from '../../../../utils/toast';
+import API_URL from "../../../../api/config";
+import { productImage as imageUrl } from "../../../../utils/productImage";
 
-const API_BASE = `${import.meta.env.VITE_API_URL}/admin`;
+const API_BASE = API_URL + "/admin";
 const getToken = () => localStorage.getItem('admin_token') || '';
 
 const ImagesTab = ({ productId, onRefresh }) => {
@@ -77,12 +79,6 @@ const ImagesTab = ({ productId, onRefresh }) => {
         }
     };
 
-const imageUrl = (path) => {
-    if (!path) return '';
-    if (/^https?:\/\//i.test(path)) return path;
-    const clean = String(path).replace(/^\/+/, '').replace(/^storage\//i, '');
-    return `/storage/${clean}`;
-};
     return (
         <div className="card mt-3">
             <div className="card-header"><h6 className="mb-0"><Images className="me-1" /> Product Images</h6></div>

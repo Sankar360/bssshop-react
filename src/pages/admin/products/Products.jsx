@@ -10,10 +10,6 @@ import { productImage as imageUrl } from "../../../utils/productImage";
 
 const API_BASE = API_URL + "/admin";
 
-
-const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
-
-
 const getToken = () => localStorage.getItem('admin_token') || '';
 const authHeaders = (json = true) => ({
     Accept: 'application/json',

@@ -5,21 +5,16 @@ import {
     Image as ImageIcon, StarFill, Upload,
 } from 'react-bootstrap-icons';
 import { showToast } from '../../../../utils/toast';
+import API_URL from "../../../../api/config";
+import { productImage as imageUrl } from "../../../../utils/productImage";
 
-const API_BASE = `${import.meta.env.VITE_API_URL}/admin`;
+const API_BASE = API_URL + "/admin";
 const getToken = () => localStorage.getItem('admin_token') || '';
 const authHeaders = (json = false) => ({
     Accept: 'application/json',
     Authorization: `Bearer ${getToken()}`,
     ...(json ? { 'Content-Type': 'application/json' } : {}),
 });
-
-const imageUrl = (path) => {
-    if (!path) return '';
-    if (/^https?:\/\//i.test(path)) return path;
-    const clean = String(path).replace(/^\/+/, '').replace(/^storage\//i, '');
-    return `/storage/${clean}`;
-};
 
 const CombinationsTab = ({ productId }) => {
     const [combos, setCombos] = useState([]);
