@@ -196,6 +196,16 @@ const ProductDetail = () => {
     /* ---------------------------------------------------------- */
     const addToCart = async (buyNow = false) => {
         const token = getToken();
+
+         if (variants.length > 0 && !display.variantId) {
+            showToast('Please select all options first.', 'warning');
+            return;
+        }
+
+        const payload = { product_id: product.id };
+        const vid = Number(display.variantId) || 0;
+        if (vid > 0) payload.variant_id = vid;
+
         try {
             const res = await fetch(`${API_BASE}/cart/add`, {
                 method: 'POST',
@@ -205,8 +215,7 @@ const ProductDetail = () => {
                     Authorization: `Bearer ${token || ''}`,
                 },
                 body: JSON.stringify({
-                    product_id: product.id,
-                    variant_id: display.variantId,
+                    ...payload,
                     quantity,
                 }),
             });
