@@ -6,14 +6,18 @@ import {
     ListCheck, ListUl, Save, XCircle, Trash,
 } from 'react-bootstrap-icons';
 import { showToast } from '../../../utils/toast';
+
+import API_URL from "../../../../api/config";
+import { productImage as imageUrl } from "../../../../utils/productImage";
+
+
 import InfoTab from './edit/InfoTab';
 import FeaturesTab from './edit/FeaturesTab';
 import SpecificationsTab from './edit/SpecificationsTab';
 import ImagesTab from './edit/ImagesTab';
 import VariantsTab from './edit/VariantsTab';
 import CombinationsTab from './edit/CombinationsTab';
-import API_URL from "../../../../api/config";
-import { productImage as imageUrl } from "../../../../utils/productImage";
+
 
 const API_BASE = API_URL + "/admin";
 const getToken = () => localStorage.getItem('admin_token') || '';
