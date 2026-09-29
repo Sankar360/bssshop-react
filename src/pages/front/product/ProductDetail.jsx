@@ -1,20 +1,25 @@
 // src/pages/front/product/ProductDetail.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import API_URL from "../../../api/config";
 import { showToast } from '../../../utils/toast';
 import { getToken } from '../../../utils/auth';
-import API_URL, { API_ORIGIN } from '../../../api/config';
-
 
 const API_BASE = API_URL;
 
+const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
+
+
 const imageUrl = (path) => {
-  if (!path) return `${API_ORIGIN}/assets/images/default-product.jpg`;
-  if (/^https?:\/\//i.test(path)) return path;
-  if (path.startsWith('/')) return `${API_ORIGIN}${path}`;
-  if (/^storage\//i.test(path)) return `${API_ORIGIN}/${path}`;
-  if (/^assets\//i.test(path)) return `${API_ORIGIN}/${path}`;
-  return `${API_ORIGIN}/storage/${path.replace(/^\/+/, '')}`;
+    if (!path) return '/assets/images/default-product.jpg';
+    if (/^https?:\/\//i.test(path)) return path;
+
+    // 👇 Prefix the backend origin instead of returning relative paths
+    if (path.startsWith('/')) return `${API_ORIGIN}${path}`;
+    if (/^storage\//i.test(path)) return `${API_ORIGIN}/${path}`;
+    if (/^assets\//i.test(path)) return `${API_ORIGIN}/${path}`;
+
+    return `${API_ORIGIN}/storage/${path.replace(/^\/+/, '')}`;
 };
 
 /* Detect if a string is a hex color or CSS color name */
@@ -253,8 +258,7 @@ const ProductDetail = () => {
     /* On mount: check status for main product + its current variant */
     useEffect(() => {
         if (!product?.id) return;
-        const token = getToken();       
-         if (!token) return;
+        const token = getToken();        if (!token) return;
 
         (async () => {
             try {
