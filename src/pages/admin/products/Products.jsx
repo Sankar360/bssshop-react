@@ -22,20 +22,6 @@ const authHeaders = (json = true) => ({
 });
 
 
-const imageUrl = (path) => {
-    if (!path) return '';
-    if (/^https?:\/\//i.test(path)) return path;
-    if (path.startsWith('/')) return `${API_ORIGIN}${path}`;
-    if (/^storage\//i.test(path)) return `${API_ORIGIN}/${path}`;
-
-    // These live under storage/app/public — so prefix with /storage/
-    if (/^(uploads|assets)\//i.test(path)) {
-        return `${API_ORIGIN}/storage/${path}`;
-    }
-
-    return `${API_ORIGIN}/storage/${path.replace(/^\/+/, '')}`;
-};
-
 const Products = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
