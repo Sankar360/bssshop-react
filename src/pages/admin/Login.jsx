@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { showToast } from "../../utils/toast";
 import { useAuth } from '../../contexts/AuthContext';
+import api, { ensureCsrf } from "../../api/axios";
+
 
 const Login = () => {
     const navigate = useNavigate();
@@ -67,44 +69,23 @@ const Login = () => {
         setLoading(true);
 
         try {
-            const response = await fetch(`${API_URL}/admin/login`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                },
-                body: JSON.stringify({
-                    email: email.trim(),
-                    password: password,
-                }),
+            await ensureCsrf();               // get XSRF-TOKEN cookie
+            const { data } = await api.post("/admin/login", {
+                email: email.trim(),
+                password,
             });
-
-            const data = await response.json();
 
             if (data.success) {
                 const loggedInUser = data?.data?.user;
 
                 if (!loggedInUser || loggedInUser.role !== "admin") {
-                    localStorage.removeItem("admin_token");
-                    localStorage.removeItem("admin_user");
                     showToast("Only administrators can access this panel.", "error");
                     return;
                 }
 
-                // Admin storage (used by AdminLayout / ProtectedRoute)
-                localStorage.setItem("admin_token", data.data.token);
-                localStorage.setItem("admin_user", JSON.stringify(loggedInUser));
+                login(loggedInUser, null); 
 
-                // Also update the customer AuthContext so the frontend header
-                // reflects the logged-in admin (shows name, avatar, Admin badge).
-                login(loggedInUser, data.data.token);
-
-                try {
-                    showToast(data.message || "Welcome back!", "success");
-                } catch (toastErr) {
-                    console.warn("Toast failed:", toastErr);
-                }
-
+                showToast(data.message || "Welcome back!", "success");
                 navigate("/admin/dashboard", { replace: true });
                 return;
             }
