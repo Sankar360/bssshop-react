@@ -32,7 +32,18 @@ export async function toggleWishlist(productId, variantId = 0) {
         return { success: false, unauthenticated: true };
     }
 
-    return res.json();
+    const data = await res.json();
+
+    // 🆕 Notify the rest of the app (WishlistContext, Header, etc.)
+    if (data.success) {
+        window.dispatchEvent(
+            new CustomEvent('wishlist:updated', {
+                detail: { count: data.count ?? 0 },
+            }),
+        );
+    }
+
+    return data;
 }
 
 export async function checkWishlistStatus(items) {

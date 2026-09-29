@@ -44,6 +44,20 @@ export const WishlistProvider = ({ children }) => {
 
   useEffect(() => { refresh(); }, [refresh]);
 
+  /* 🆕 Listen for wishlist:updated from utils/wishlist.js and other places */
+  useEffect(() => {
+    const handler = (e) => {
+      // If the event carries a count, use it directly (fast)
+      if (typeof e.detail?.count === 'number') {
+        setCount(e.detail.count);
+      }
+      // Also refresh to sync the items list
+      refresh();
+    };
+    window.addEventListener('wishlist:updated', handler);
+    return () => window.removeEventListener('wishlist:updated', handler);
+  }, [refresh]);
+
   const isWishlisted = (productId, variantId = 0) =>
     items.some(
       (i) =>
