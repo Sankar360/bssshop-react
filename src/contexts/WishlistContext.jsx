@@ -67,7 +67,15 @@ export const WishlistProvider = ({ children }) => {
 
   const toggle = async ({ product_id, variant_id = 0 }) => {
     if (!loggedIn) throw new Error('Please log in to use your wishlist.');
-    const res = await api.post('/wishlist/toggle', { product_id, variant_id });
+
+    const normalizedVariantId =
+    Number(variant_id) > 0 ? Number(variant_id) : null;
+
+    const res = await api.post('/wishlist/toggle', {
+      product_id,
+      variant_id: normalizedVariantId,
+    });
+
     if (res.data.success) {
       const active = res.data.action === 'added';
       setItems((prev) => {
@@ -78,7 +86,7 @@ export const WishlistProvider = ({ children }) => {
               (i.variant_id || 0) === (variant_id || 0)
             ),
         );
-        return active ? [...filtered, { product_id, variant_id }] : filtered;
+        return active ? [...filtered, { product_id, variant_id: normalizedVariantId }] : filtered;
       });
       setCount(res.data.count ?? 0);
       window.dispatchEvent(
