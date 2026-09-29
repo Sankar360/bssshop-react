@@ -1,13 +1,15 @@
 // src/utils/auth.js
-import api, { ensureCsrf } from '../api/axios';
-
 const USER_KEYS = ['auth_user', 'admin_user', 'user', 'customer'];
 
 export function getUser() {
     for (const k of USER_KEYS) {
         const raw = localStorage.getItem(k);
         if (!raw) continue;
-        try { return JSON.parse(raw); } catch { /* ignore */ }
+        try {
+            return JSON.parse(raw);
+        } catch {
+            /* ignore */
+        }
     }
     return null;
 }
@@ -21,7 +23,13 @@ export function clearAuth() {
     USER_KEYS.forEach((k) => localStorage.removeItem(k));
 }
 
-/* Server-side logout — invalidates session cookie */
+/* Back-compat stubs — tokens no longer used */
+export function getToken() {
+    return null;
+}
+
+/* Server-side logout via axios — used by Header if needed */
+import api, { ensureCsrf } from '../api/axios';
 export async function logout() {
     try {
         await ensureCsrf();
@@ -31,7 +39,3 @@ export async function logout() {
     }
     clearAuth();
 }
-
-/* Back-compat stubs */
-export function getToken() { return null; }
-export function isLoggedIn() { return false; }   // must be async via AuthContext

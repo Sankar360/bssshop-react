@@ -40,12 +40,22 @@ api.interceptors.response.use(
 );
 
 let csrfReady = false;
-export async function ensureCsrf() {
-  if (csrfReady) return;
-  await axios.get(`${API_ORIGIN}/sanctum/csrf-cookie`, {
-    withCredentials: true,
-  });
-  csrfReady = true;
+let csrfPromise = null;
+
+export async function ensureCsrf(force = false) {
+  if (csrfReady && !force) return;
+  if (csrfPromise) return csrfPromise;
+
+  csrfPromise = axios
+    .get(`${API_ORIGIN}/sanctum/csrf-cookie`, { withCredentials: true })
+    .then(() => {
+      csrfReady = true;
+    })
+    .finally(() => {
+      csrfPromise = null;
+    });
+
+  return csrfPromise;
 }
 
 export default api;

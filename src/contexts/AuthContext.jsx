@@ -1,7 +1,17 @@
 // src/contexts/AuthContext.jsx
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, {
+    createContext,
+    useContext,
+    useEffect,
+    useState,
+    useCallback,
+} from 'react';
 import api, { ensureCsrf } from '../api/axios';
-import { getUser as getStoredUser, setUser as setStoredUser, clearAuth } from '../utils/auth';
+import {
+    getUser as getStoredUser,
+    setUser as setStoredUser,
+    clearAuth,
+} from '../utils/auth';
 
 const AuthContext = createContext(null);
 
@@ -11,10 +21,6 @@ export const AuthProvider = ({ children }) => {
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    /* ------------------------------------------------------------- */
-    /* Ask the server who we are — source of truth is the session.    */
-    /* localStorage is only a UI cache; if the server says no, clear. */
-    /* ------------------------------------------------------------- */
     const refreshAuth = useCallback(async () => {
         try {
             const { data } = await api.get('/auth/check');
@@ -40,14 +46,17 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        // Kick off CSRF so any subsequent POST works
         ensureCsrf().finally(refreshAuth);
     }, [refreshAuth]);
 
-    /* Called by login/register components after the API call succeeds */
     const doLogin = async (email, password, remember = false) => {
         await ensureCsrf();
-        const { data } = await api.post('/auth/login', { email, password, remember });
+        const { data } = await api.post('/auth/login', {
+            email: String(email || '').trim(),
+            password: String(password || ''),
+            remember: !!remember,
+        });
+
         if (data?.success && data?.data?.user) {
             setUser(data.data.user);
             setLoggedIn(true);
@@ -80,6 +89,8 @@ export const AuthProvider = ({ children }) => {
         setLoggedIn(false);
         setIsAdmin(false);
         clearAuth();
+        // Force a fresh CSRF cookie for the next session
+        await ensureCsrf(true).catch(() => {});
     };
 
     const value = {
@@ -93,7 +104,9 @@ export const AuthProvider = ({ children }) => {
         refreshAuth,
     };
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    return (
+        <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+    );
 };
 
 export const useAuth = () => {
