@@ -12,8 +12,10 @@ import SpecificationsTab from './edit/SpecificationsTab';
 import ImagesTab from './edit/ImagesTab';
 import VariantsTab from './edit/VariantsTab';
 import CombinationsTab from './edit/CombinationsTab';
+import API_URL from "../../../../api/config";
+import { productImage as imageUrl } from "../../../../utils/productImage";
 
-const API_BASE = `${import.meta.env.VITE_API_URL}/admin`;
+const API_BASE = API_URL + "/admin";
 const getToken = () => localStorage.getItem('admin_token') || '';
 
 const ProductEdit = () => {
@@ -34,13 +36,6 @@ const ProductEdit = () => {
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-
-    const imageUrl = (path) => {
-        if (!path) return '';
-        if (/^https?:\/\//i.test(path)) return path;
-        const clean = String(path).replace(/^\/+/, '').replace(/^storage\//i, '');
-        return `/storage/${clean}`;
-    };
 
     const fetchProduct = async () => {
         try {
