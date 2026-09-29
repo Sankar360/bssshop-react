@@ -9,7 +9,6 @@ import { useAuth } from "../../../contexts/AuthContext";
 import "../../../css/custom-header.css";
 
 const API_BASE = API_URL;
-
 const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
 
 
@@ -18,10 +17,10 @@ function getAuthToken() {
     localStorage.getItem("auth_token") ||
     localStorage.getItem("customer_token") ||
     localStorage.getItem("token") ||
+    localStorage.getItem("admin_token") ||
     null
   );
 }
-
 function resolveImageUrl(input) {
   if (input && typeof input === "object") {
     if (input.image_url) return input.image_url;

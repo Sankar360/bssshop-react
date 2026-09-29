@@ -1,9 +1,8 @@
 // src/contexts/AuthContext.jsx
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import api from '../api/axios';
-import { authService } from '../api/services/authService';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 /* ---- helpers to read either admin or customer session ---- */
 const readStoredToken = () =>
@@ -16,6 +15,7 @@ const readStoredToken = () =>
 const readStoredUser = () => {
   const raw =
     localStorage.getItem('admin_user') ||
+    localStorage.getItem('auth_user') ||
     localStorage.getItem('user') ||
     localStorage.getItem('customer') ||
     null;
@@ -32,13 +32,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(readStoredToken());
 
-  console.log('[AuthContext] initial', {
-    storedToken: readStoredToken(),
-    storedUser: readStoredUser(),
-    stateUser: user,
-    stateToken: token,
-  });
-  
   useEffect(() => {
     // If we already have a stored user (admin OR customer), trust it immediately
     const storedUser = readStoredUser();
@@ -56,13 +49,13 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const response = await authService.checkAuth();
+      const response = await api.get('/auth/check');
       if (response.data.success) {
         setUser(response.data.data.user);
       } else {
         logout();
       }
-    } catch (error) {
+    } catch {
       // Don't wipe admin session on a failed /me call
       const storedUser = readStoredUser();
       if (!storedUser) logout();
@@ -73,26 +66,26 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (credentials) => {
-    const response = await authService.login(credentials);
+    const response = await api.post('/auth/login', credentials);
     if (response.data.success) {
-      const { token, user } = response.data.data;
-      localStorage.setItem('token', token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setToken(token);
-      setUser(user);
+      const { token: newToken, user: newUser } = response.data.data;
+      localStorage.setItem('token', newToken);
+      api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+      setToken(newToken);
+      setUser(newUser);
       return response.data;
     }
     throw new Error(response.data.message);
   };
 
   const register = async (data) => {
-    const response = await authService.register(data);
+    const response = await api.post('/auth/register', data);
     if (response.data.success) {
-      const { token, user } = response.data.data;
-      localStorage.setItem('token', token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setToken(token);
-      setUser(user);
+      const { token: newToken, user: newUser } = response.data.data;
+      localStorage.setItem('token', newToken);
+      api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+      setToken(newToken);
+      setUser(newUser);
       return response.data;
     }
     throw new Error(response.data.message);
@@ -100,12 +93,13 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await authService.logout();
-    } catch (error) {
+      await api.post('/auth/logout');
+    } catch {
       // ignore
     } finally {
       localStorage.removeItem('token');
       localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
       localStorage.removeItem('customer_token');
       localStorage.removeItem('admin_token');
       localStorage.removeItem('admin_user');
@@ -117,25 +111,33 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateUser = (updatedData) => {
-    setUser(prev => ({ ...prev, ...updatedData }));
+    setUser((prev) => ({ ...prev, ...updatedData }));
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      loading,
-      loggedIn: !!user,                      // ← add this; Header uses it
-      isAuthenticated: !!user,
-      isAdmin: user?.role === 'admin',
-      login,
-      register,
-      logout,
-      updateUser,
-      checkAuth,
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        loggedIn: !!user,
+        isAuthenticated: !!user,
+        isAdmin: user?.role === 'admin',
+        login,
+        register,
+        logout,
+        updateUser,
+        checkAuth,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error('useAuth must be used inside <AuthProvider>');
+  }
+  return ctx;
+};
