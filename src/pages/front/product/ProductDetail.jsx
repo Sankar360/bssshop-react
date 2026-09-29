@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import API_URL from "../../../api/config";
 import { showToast } from '../../../utils/toast';
+import { getToken } from '../../../utils/auth';
 
 const API_BASE = API_URL;
 
@@ -194,8 +195,7 @@ const ProductDetail = () => {
     /*  Add to cart                                                */
     /* ---------------------------------------------------------- */
     const addToCart = async (buyNow = false) => {
-        const token = localStorage.getItem('auth_token');
-
+        const token = getToken();
         try {
             const res = await fetch(`${API_BASE}/cart/add`, {
                 method: 'POST',
@@ -249,8 +249,7 @@ const ProductDetail = () => {
     /* On mount: check status for main product + its current variant */
     useEffect(() => {
         if (!product?.id) return;
-        const token = localStorage.getItem('auth_token');
-        if (!token) return;
+        const token = getToken();        if (!token) return;
 
         (async () => {
             try {
@@ -289,8 +288,7 @@ const ProductDetail = () => {
 
     /* Toggle wishlist — CategoryOverview-identical request */
     const toggleWishlist = async (productId, variantId = 0) => {
-        const token = localStorage.getItem('auth_token');
-        if (!token) {
+        const token = getToken();        if (!token) {
             showToast('Please login to use your wishlist', 'warning');
             navigate('/auth/login');
             return;
