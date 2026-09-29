@@ -42,11 +42,6 @@ const Wishlist = () => {
         navigate('/auth/login', { state: { from: { pathname: '/wishlist' } } });
         return;
       }
-      if (isAdmin) {
-        showToast('Admins do not have a wishlist.', 'info');
-        setLoading(false);
-        return;
-      }
       try {
         const { default: api } = await import('../../../api/axios');
         const res = await api.get('/wishlist');

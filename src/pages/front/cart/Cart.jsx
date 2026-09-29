@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import API_URL from "../../../api/config";
 import { showToast } from '../../../utils/toast';
+import api from '../../../api/axios';   // ← ADD THIS
+
 
 const API_BASE = API_URL;
 

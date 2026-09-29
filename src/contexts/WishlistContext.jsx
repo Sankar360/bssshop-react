@@ -1,11 +1,5 @@
 // src/contexts/WishlistContext.jsx
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-} from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import api from '../api/axios';
 
@@ -18,13 +12,12 @@ const WishlistContext = createContext({
 });
 
 export const WishlistProvider = ({ children }) => {
-  const { loggedIn, isAdmin } = useAuth();     // ← add isAdmin
+  const { loggedIn } = useAuth();
   const [items, setItems] = useState([]);
   const [count, setCount] = useState(0);
 
   const refresh = useCallback(async () => {
-    // Skip for guests AND admins — admins don't have a customer wishlist
-    if (!loggedIn || isAdmin) {
+    if (!loggedIn) {
       setItems([]);
       setCount(0);
       return;
@@ -43,15 +36,13 @@ export const WishlistProvider = ({ children }) => {
         setCount(payload.count ?? raw.length);
       }
     } catch (err) {
-      // 401 or other — reset silently
+      console.warn('[Wishlist] refresh failed', err?.response?.status);
       setItems([]);
       setCount(0);
     }
-  }, [loggedIn, isAdmin]);     // ← add isAdmin to deps
+  }, [loggedIn]);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  useEffect(() => { refresh(); }, [refresh]);
 
   const isWishlisted = (productId, variantId = 0) =>
     items.some(
@@ -62,12 +53,7 @@ export const WishlistProvider = ({ children }) => {
 
   const toggle = async ({ product_id, variant_id = 0 }) => {
     if (!loggedIn) throw new Error('Please log in to use your wishlist.');
-    if (isAdmin) throw new Error('Admins cannot use the wishlist.');
-
-    const res = await api.post('/wishlist/toggle', {
-      product_id,
-      variant_id,
-    });
+    const res = await api.post('/wishlist/toggle', { product_id, variant_id });
     if (res.data.success) {
       const active = res.data.action === 'added';
       setItems((prev) => {
@@ -78,9 +64,7 @@ export const WishlistProvider = ({ children }) => {
               (i.variant_id || 0) === (variant_id || 0)
             ),
         );
-        return active
-          ? [...filtered, { product_id, variant_id }]
-          : filtered;
+        return active ? [...filtered, { product_id, variant_id }] : filtered;
       });
       setCount(res.data.count ?? 0);
       window.dispatchEvent(
@@ -93,9 +77,7 @@ export const WishlistProvider = ({ children }) => {
   };
 
   return (
-    <WishlistContext.Provider
-      value={{ items, count, isWishlisted, toggle, refresh }}
-    >
+    <WishlistContext.Provider value={{ items, count, isWishlisted, toggle, refresh }}>
       {children}
     </WishlistContext.Provider>
   );

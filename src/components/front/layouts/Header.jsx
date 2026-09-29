@@ -536,27 +536,17 @@ const Header = ({
             )}
 
             <li className="nav-item">
-              <Link
-                className="nav-link nav-icon-link position-relative"
-                to="/cart"
-              >
-                <i className="bi bi-cart fs-5"></i>
-                <span className="badge bg-danger rounded-pill cart-count">
-                  {cartCount}
-                </span>
-              </Link>
-            </li>
+  <Link className="nav-link nav-icon-link position-relative" to="/cart">
+    <i className="bi bi-cart fs-5"></i>
+    <span className="badge bg-danger rounded-pill cart-count">{cartCount}</span>
+  </Link>
+</li>
             <li className="nav-item">
-              <Link
-                className="nav-link nav-icon-link position-relative"
-                to="/wishlist"
-              >
-                <i className="bi bi-heart fs-5"></i>
-                <span className="badge bg-danger rounded-pill wishlist-count">
-                  {wishlistCount}
-                </span>
-              </Link>
-            </li>
+  <Link className="nav-link nav-icon-link position-relative" to="/wishlist">
+    <i className="bi bi-heart fs-5"></i>
+    <span className="badge bg-danger rounded-pill wishlist-count">{wishlistCount}</span>
+  </Link>
+</li>
           </ul>
         </div>
       </div>
