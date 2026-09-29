@@ -6,8 +6,10 @@ import {
     Image as ImageIcon, Tags, BarChart, Save, Trash, XCircle,
 } from 'react-bootstrap-icons';
 import { showToast } from '../../../components/admin/layouts/Footer';
+import API_URL from '../../../api/config';                             // ← add
+import { productImage as imageUrl } from '../../../utils/productImage'; // ← use shared hel
 
-const API_BASE = `${import.meta.env.VITE_API_URL}/admin`;
+const API_BASE = API_URL + '/admin';                                    // ← absolute, no env var
 const getToken = () => localStorage.getItem('admin_token') || '';
 const authHeaders = (json = true) => ({
     Accept: 'application/json',
@@ -34,12 +36,7 @@ const formatDateTime = (s) =>
           })
         : '—';
 
-const imageUrl = (path) => {
-    if (!path) return '';
-    if (/^https?:\/\//i.test(path)) return path;
-    const clean = String(path).replace(/^\/+/, '').replace(/^storage\//i, '');
-    return `/storage/${clean}`;
-};
+
 const BlogEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
