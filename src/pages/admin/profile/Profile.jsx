@@ -5,8 +5,10 @@ import {
     Palette, Bell, ExclamationTriangle, Trash, Save, Key,
 } from 'react-bootstrap-icons';
 import { showToast } from '../../../components/admin/layouts/Footer';
+import API_URL from '../../../api/config';                             // ← add
+import { productImage as imageUrl } from '../../../utils/productImage'; // ← use shared hel
 
-const API_BASE = `${import.meta.env.VITE_API_URL}/admin`;
+const API_BASE = API_URL + '/admin';                                    // ← absolute, no env var
 const getToken = () => localStorage.getItem('admin_token') || '';
 const authHeaders = (json = true) => ({
     Accept: 'application/json',
@@ -306,8 +308,7 @@ const Profile = () => {
         }
     };
 
-    const avatarSrc = avatarPreview || (user.avatar ? (user.avatar.startsWith('http') ? user.avatar : `${user.avatar}`) : '');
-
+    const avatarSrc = avatarPreview || (user.avatar ? imageUrl(user.avatar) : '');
     /* -------------------------------------------------------------- */
     /*  Render                                                         */
     /* -------------------------------------------------------------- */
