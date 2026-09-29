@@ -41,67 +41,44 @@ const Cart = () => {
 
     const token = localStorage.getItem('auth_token');
 
-    /* ---------------------------------------------------------- */
-    /*  Fetch cart                                                 */
-    /* ---------------------------------------------------------- */
     const fetchCart = async () => {
-        setLoading(true);
-        try {
-            const res = await fetch(`${API_BASE}/cart`, {
-                headers: {
-                    Accept: 'application/json',
-                    Authorization: `Bearer ${token || ''}`,
-                },
-            });
-            const data = await res.json();
-
-            if (data.success) {
-                const payload = data.data || data;
-                setCartItems(payload.items ?? payload.cart_items ?? []);
-                setSummary({
-                    subtotal: payload.subtotal ?? 0,
-                    shipping: payload.shipping ?? 0,
-                    tax: payload.tax ?? 0,
-                    total: payload.total ?? 0,
-                });
-            }
-        } catch (err) {
-            console.error('Cart fetch failed', err);
-        } finally {
-            setLoading(false);
-        }
-    };
+  setLoading(true);
+  try {
+    const res = await api.get('/cart');
+    const data = res.data;
+    if (data.success) {
+      const payload = data.data || data;
+      setCartItems(payload.items ?? payload.cart_items ?? []);
+      setSummary({
+        subtotal: payload.subtotal ?? 0,
+        shipping: payload.shipping ?? 0,
+        tax: payload.tax ?? 0,
+        total: payload.total ?? 0,
+      });
+    }
+  } catch (err) {
+    console.error('Cart fetch failed', err?.response?.status);
+    setCartItems([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
     useEffect(() => {
         fetchCart();
         // eslint-disable-next-line
     }, []);
 
-    /* ---------------------------------------------------------- */
-    /*  Update quantity (called from +/- buttons)                  */
-    /* ---------------------------------------------------------- */
-    const updateCartQuantity = async (key, quantity) => {
-        try {
-            const res = await fetch(`${API_BASE}/cart/update`, {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token || ''}`,
-                },
-                body: JSON.stringify({ key, quantity }),
-            });
-            const data = await res.json();
-
-            if (data.success) {
-                fetchCart();
-            } else {
-                showToast(data.message || 'Failed to update cart', 'error');
-            }
-        } catch {
-            showToast('Error updating cart', 'error');
-        }
-    };
+    // Replace updateCartQuantity
+const updateCartQuantity = async (key, quantity) => {
+  try {
+    const res = await api.post('/cart/update', { key, quantity });
+    if (res.data.success) fetchCart();
+    else showToast(res.data.message || 'Failed to update cart', 'error');
+  } catch {
+    showToast('Error updating cart', 'error');
+  }
+};
 
     const updateCartItem = (key, change) => {
         const item = cartItems.find((i) => i.key === key);
@@ -117,36 +94,22 @@ const Cart = () => {
         updateCartQuantity(key, quantity);
     };
 
-    /* ---------------------------------------------------------- */
-    /*  Remove item                                                */
-    /* ---------------------------------------------------------- */
-    const removeFromCart = async (key) => {
-        if (!key) return;
-        if (!window.confirm('Are you sure you want to remove this item?')) return;
-
-        try {
-            const res = await fetch(`${API_BASE}/cart/remove`, {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token || ''}`,
-                },
-                body: JSON.stringify({ key }),
-            });
-            const data = await res.json();
-
-            if (data.success) {
-                showToast('Item removed from cart', 'success');
-                fetchCart();
-            } else {
-                showToast(data.message || 'Failed to remove item', 'error');
-            }
-        } catch {
-            showToast('Error removing item', 'error');
-        }
-    };
-
+    // Replace removeFromCart
+const removeFromCart = async (key) => {
+  if (!key) return;
+  if (!window.confirm('Are you sure you want to remove this item?')) return;
+  try {
+    const res = await api.post('/cart/remove', { key });
+    if (res.data.success) {
+      showToast('Item removed from cart', 'success');
+      fetchCart();
+    } else {
+      showToast(res.data.message || 'Failed to remove item', 'error');
+    }
+  } catch {
+    showToast('Error removing item', 'error');
+  }
+};
     /* ---------------------------------------------------------- */
     /*  Render helper: variant feature badges                      */
     /* ---------------------------------------------------------- */

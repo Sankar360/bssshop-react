@@ -21,13 +21,13 @@ const CartContext = createContext({
 });
 
 export const CartProvider = ({ children }) => {
-  const { loggedIn, isAdmin } = useAuth();
+  const { loggedIn, isAdmin } = useAuth();     // ← add isAdmin
   const [items, setItems] = useState([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const refresh = useCallback(async () => {
-    if (!loggedIn || isAdmin) {
+    if (!loggedIn || isAdmin) {                // ← skip for admins
       setItems([]);
       setCount(0);
       return;
@@ -45,7 +45,8 @@ export const CartProvider = ({ children }) => {
         );
       }
     } catch (err) {
-      console.warn('[Cart] refresh failed', err?.response?.status);
+      setItems([]);
+      setCount(0);
     } finally {
       setLoading(false);
     }
@@ -56,6 +57,9 @@ export const CartProvider = ({ children }) => {
   }, [refresh]);
 
   const addItem = async ({ product_id, variant_id = 0, quantity = 1 }) => {
+    if (!loggedIn) throw new Error('Please log in to add items to your cart.');
+    if (isAdmin) throw new Error('Admins cannot use the cart.');
+
     const res = await api.post('/cart/add', {
       product_id,
       variant_id,

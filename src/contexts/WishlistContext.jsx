@@ -18,12 +18,12 @@ const WishlistContext = createContext({
 });
 
 export const WishlistProvider = ({ children }) => {
-  const { loggedIn, isAdmin } = useAuth();   // ← add isAdmin
+  const { loggedIn, isAdmin } = useAuth();     // ← add isAdmin
   const [items, setItems] = useState([]);
   const [count, setCount] = useState(0);
 
   const refresh = useCallback(async () => {
-    // Skip for guests AND admins
+    // Skip for guests AND admins — admins don't have a customer wishlist
     if (!loggedIn || isAdmin) {
       setItems([]);
       setCount(0);
@@ -43,9 +43,11 @@ export const WishlistProvider = ({ children }) => {
         setCount(payload.count ?? raw.length);
       }
     } catch (err) {
-      console.warn('[Wishlist] refresh failed', err?.response?.status);
+      // 401 or other — reset silently
+      setItems([]);
+      setCount(0);
     }
-  }, [loggedIn, isAdmin]);   // ← add isAdmin
+  }, [loggedIn, isAdmin]);     // ← add isAdmin to deps
 
   useEffect(() => {
     refresh();
@@ -59,10 +61,9 @@ export const WishlistProvider = ({ children }) => {
     );
 
   const toggle = async ({ product_id, variant_id = 0 }) => {
-    // Refuse for admins
-    if (isAdmin) {
-      return { success: false, message: 'Admins cannot use the wishlist.' };
-    }
+    if (!loggedIn) throw new Error('Please log in to use your wishlist.');
+    if (isAdmin) throw new Error('Admins cannot use the wishlist.');
+
     const res = await api.post('/wishlist/toggle', {
       product_id,
       variant_id,
