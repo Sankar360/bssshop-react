@@ -7,8 +7,8 @@ import {
 } from 'react-bootstrap-icons';
 import { showToast } from '../../../utils/toast';
 
-import API_URL from "../../../../api/config";
-import { productImage as imageUrl } from "../../../../utils/productImage";
+import API_URL from '../../../api/config';
+import { productImage as imageUrl } from '../../../utils/productImage';
 
 
 import InfoTab from './edit/InfoTab';
