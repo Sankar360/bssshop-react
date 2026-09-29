@@ -258,7 +258,8 @@ const ProductDetail = () => {
     /* On mount: check status for main product + its current variant */
     useEffect(() => {
         if (!product?.id) return;
-        const token = getToken();        if (!token) return;
+        const token = getToken();       
+         if (!token) return;
 
         (async () => {
             try {
