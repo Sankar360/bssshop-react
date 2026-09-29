@@ -3,8 +3,15 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { PlusCircle, Search, XCircle, Pencil, Trash, Tag, Box, ExclamationTriangle } from 'react-bootstrap-icons';
 import { showToast } from '../../../utils/toast';
+import API_URL from "../../../api/config";
+
 
 const API_BASE = `${import.meta.env.VITE_API_URL}/admin`;
+
+
+const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
+
+
 const getToken = () => localStorage.getItem('admin_token') || '';
 const authHeaders = (json = true) => ({
     Accept: 'application/json',
@@ -12,13 +19,16 @@ const authHeaders = (json = true) => ({
     ...(json ? { 'Content-Type': 'application/json' } : {}),
 });
 
-// ✅ Full URL builder for storage files
-const imageUrl = (p) => {
-    if (!p) return '/assets/images/default-product.jpg';
-    if (/^https?:\/\//i.test(p)) return p;
-    const clean = String(p).replace(/^\/+/, '').replace(/^storage\//i, '');
-    return `/storage/${clean}`;
+
+const imageUrl = (path) => {
+    if (!path) return '';
+    if (/^https?:\/\//i.test(path)) return path;
+    if (path.startsWith('/')) return `${API_ORIGIN}${path}`;
+    if (/^storage\//i.test(path)) return `${API_ORIGIN}/${path}`;
+    if (/^(uploads|assets)\//i.test(path)) return `${API_ORIGIN}/${path}`;
+    return `${API_ORIGIN}/storage/${path.replace(/^\/+/, '')}`;
 };
+
 
 const Products = () => {
     const [products, setProducts] = useState([]);
