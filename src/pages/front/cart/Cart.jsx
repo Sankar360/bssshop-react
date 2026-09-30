@@ -13,24 +13,32 @@ const imageUrl = (input) => {
     // Handle object shape: { image_url: "...", image: "..." }
     if (input && typeof input === "object") {
         if (input.image_url) {
-            const u = input.image_url;
-            if (/^https?:\/\//i.test(u)) return u;
-            if (u.startsWith("/")) return `${API_ORIGIN}${u}`;
-            return `${API_ORIGIN}/${u}`;
+            return imageUrl(input.image_url);
         }
         if (input.image) return imageUrl(input.image);
     }
 
-    const path = input;
+    const path = String(input ?? "").trim();
     if (!path) return "/assets/images/default-product.jpg";
+
+    // Absolute URLs → return as-is
     if (/^https?:\/\//i.test(path)) return path;
 
-    // Prefix API origin — this is the fix
-    if (path.startsWith("/")) return `${API_ORIGIN}${path}`;
-    if (/^storage\//i.test(path)) return `${API_ORIGIN}/${path}`;
-    if (/^(uploads|assets)\//i.test(path)) return `${API_ORIGIN}/${path}`;
+    // Normalize: strip a leading "/" so we can detect prefixes
+    const clean = path.replace(/^\/+/, "");
 
-    return `${API_ORIGIN}/storage/${path.replace(/^\/+/, "")}`;
+    // Already has storage/ → just prefix origin
+    if (/^storage\//i.test(clean)) {
+        return `${API_ORIGIN}/${clean}`;
+    }
+
+    // uploads/... or assets/... → insert storage/ in between
+    if (/^(uploads|assets)\//i.test(clean)) {
+        return `${API_ORIGIN}/storage/${clean}`;
+    }
+
+    // Everything else → assume it lives under storage/app/public
+    return `${API_ORIGIN}/storage/${clean}`;
 };
 
 const Cart = () => {
