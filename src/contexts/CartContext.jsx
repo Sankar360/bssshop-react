@@ -45,6 +45,13 @@ export const CartProvider = ({ children }) => {
 
   useEffect(() => { refresh(); }, [refresh]);
 
+  // ✅ Listen for external cart updates (from utils/cart.js)
+  useEffect(() => {
+    const handler = () => refresh();
+    window.addEventListener('cart:updated', handler);
+    return () => window.removeEventListener('cart:updated', handler);
+  }, [refresh]);
+
   const addItem = async ({ product_id, variant_id = 0, quantity = 1 }) => {
     if (!loggedIn) throw new Error('Please log in to add items to your cart.');
     const res = await api.post('/cart/add', { product_id, variant_id, quantity });

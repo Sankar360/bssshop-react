@@ -1,4 +1,3 @@
-// src/utils/auth.js
 const USER_KEY = 'auth_user';
 const TOKEN_KEY = 'auth_token';
 
@@ -30,7 +29,6 @@ export function clearAuth() {
     localStorage.removeItem(TOKEN_KEY);
     // legacy keys — safe to purge
     localStorage.removeItem('admin_user');
-    localStorage.removeItem('auth_token');
     localStorage.removeItem('user');
     localStorage.removeItem('customer');
 }
