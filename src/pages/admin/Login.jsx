@@ -46,7 +46,6 @@ const Login = () => {
         let cancelled = false;
         (async () => {
             try {
-                await ensureCsrf();
                 const { data } = await api.get("/admin/check-auth");
                 if (!cancelled && data?.success) {
                     setAuthUser(data.data.user);
@@ -66,8 +65,6 @@ const Login = () => {
         setLoading(true);
 
         try {
-            await ensureCsrf();
-
             const { data } = await api.post("/admin/login", {
                 email: email.trim(),
                 password,
@@ -75,6 +72,8 @@ const Login = () => {
 
             if (data.success) {
                 const loggedInUser = data?.data?.user;
+                const token = data?.data?.token;         // ✅ IMPORTANT: capture the token
+
 
                 if (!loggedInUser || loggedInUser.role !== "admin") {
                     showToast("Only administrators can access this panel.", "error");
@@ -82,7 +81,7 @@ const Login = () => {
                 }
 
                 // ✅ Sync React state. Session cookie is already set by the backend.
-                setAuthUser(loggedInUser);
+                setAuthUser(loggedInUser, token);
 
                 showToast(data.message || "Welcome back!", "success");
                 navigate("/admin/dashboard", { replace: true });
