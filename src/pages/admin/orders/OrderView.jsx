@@ -6,10 +6,9 @@ import {
     GeoAlt, ArrowRepeat, ClockHistory, Lightning, List, Envelope, Phone, Box,
 } from 'react-bootstrap-icons';
 import { showToast } from '../../../components/admin/layouts/Footer';
+import { productImage } from '../../../utils/productImage';
 
-import API_URL from '../../../api/config';
-import { productImage as imageUrl } from '../../../utils/productImage';
-
+const API_BASE = `${import.meta.env.VITE_API_URL}/admin`;
 const getToken = () => localStorage.getItem('auth_token') || '';
 const authHeaders = (json = true) => ({
     Accept: 'application/json',
@@ -363,7 +362,7 @@ const OrderView = () => {
                                                         <div className="d-flex align-items-center">
                                                             {item.product_image ? (
                                                                 <img
-                                                                    src={imageUrl(item.product_image)}
+                                                                    src={productImage(item.product_image)}
                                                                     alt={item.product_name}
                                                                     style={{
                                                                         width: 50,
