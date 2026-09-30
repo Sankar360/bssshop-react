@@ -7,28 +7,30 @@ import api from '../../../api/axios';   // ← ADD THIS
 
 
 const API_BASE = API_URL;
+const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
 
-const imageUrl = (path) => {
-    if (!path) return '/assets/images/default-product.jpg';
+const imageUrl = (input) => {
+    // Handle object shape: { image_url: "...", image: "..." }
+    if (input && typeof input === "object") {
+        if (input.image_url) {
+            const u = input.image_url;
+            if (/^https?:\/\//i.test(u)) return u;
+            if (u.startsWith("/")) return `${API_ORIGIN}${u}`;
+            return `${API_ORIGIN}/${u}`;
+        }
+        if (input.image) return imageUrl(input.image);
+    }
 
-    // Full URLs → use as-is
+    const path = input;
+    if (!path) return "/assets/images/default-product.jpg";
     if (/^https?:\/\//i.test(path)) return path;
 
-    // Already-correct storage URLs → use as-is
-    if (path.startsWith('/storage/')) return path;
-    if (path.startsWith('storage/')) return `/${path}`;
+    // Prefix API origin — this is the fix
+    if (path.startsWith("/")) return `${API_ORIGIN}${path}`;
+    if (/^storage\//i.test(path)) return `${API_ORIGIN}/${path}`;
+    if (/^(uploads|assets)\//i.test(path)) return `${API_ORIGIN}/${path}`;
 
-    // /uploads/... or uploads/... → prefix with /storage
-    if (path.startsWith('/uploads/')) return `/storage${path}`;
-    if (path.startsWith('uploads/')) return `/storage/${path}`;
-
-    // /assets/... or assets/... → use as-is (public assets)
-    if (path.startsWith('/assets/')) return path;
-    if (path.startsWith('assets/')) return `/${path}`;
-
-    // Anything else → assume it lives under storage/app/public
-    const clean = path.replace(/^\/+/, '');
-    return `/storage/${clean}`;
+    return `${API_ORIGIN}/storage/${path.replace(/^\/+/, "")}`;
 };
 
 const Cart = () => {
