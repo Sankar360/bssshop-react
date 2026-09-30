@@ -194,7 +194,7 @@ const removeFromCart = async (key) => {
                                                         className="cart-product-image-link"
                                                     >
                                                         <img
-                                                            src={imageUrl(item.image)}
+                                                            src={imageUrl(item)}
                                                             alt={item.name}
                                                             className="cart-product-image"
                                                         />
@@ -288,7 +288,7 @@ const removeFromCart = async (key) => {
                                             className="cart-mobile-image-link"
                                         >
                                             <img
-                                                src={imageUrl(item.image)}
+                                                src={imageUrl(item)}
                                                 alt={item.name}
                                                 className="cart-mobile-image"
                                             />
