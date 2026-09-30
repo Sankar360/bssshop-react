@@ -1,104 +1,63 @@
 // src/pages/front/cart/Cart.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import API_URL from "../../../api/config";
 import { showToast } from '../../../utils/toast';
-import api from '../../../api/axios';   // ← ADD THIS
+import { useCart } from '../../../contexts/CartContext';
 
-
-const API_BASE = API_URL;
 const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
 
 const imageUrl = (input) => {
-    // Handle object shape: { image_url: "...", image: "..." }
     if (input && typeof input === "object") {
-        if (input.image_url) {
-            return imageUrl(input.image_url);
-        }
+        if (input.image_url) return imageUrl(input.image_url);
         if (input.image) return imageUrl(input.image);
     }
-
     const path = String(input ?? "").trim();
     if (!path) return "/assets/images/default-product.jpg";
-
-    // Absolute URLs → return as-is
     if (/^https?:\/\//i.test(path)) return path;
 
-    // Normalize: strip a leading "/" so we can detect prefixes
     const clean = path.replace(/^\/+/, "");
-
-    // Already has storage/ → just prefix origin
-    if (/^storage\//i.test(clean)) {
-        return `${API_ORIGIN}/${clean}`;
-    }
-
-    // uploads/... or assets/... → insert storage/ in between
-    if (/^(uploads|assets)\//i.test(clean)) {
-        return `${API_ORIGIN}/storage/${clean}`;
-    }
-
-    // Everything else → assume it lives under storage/app/public
+    if (/^storage\//i.test(clean)) return `${API_ORIGIN}/${clean}`;
+    if (/^(uploads|assets)\//i.test(clean)) return `${API_ORIGIN}/storage/${clean}`;
     return `${API_ORIGIN}/storage/${clean}`;
 };
 
 const Cart = () => {
-    const [cartItems, setCartItems] = useState([]);
-    const [summary, setSummary] = useState({
-        subtotal: 0,
-        shipping: 0,
-        tax: 0,
-        total: 0,
-    });
-    const [loading, setLoading] = useState(true);
+    const {
+        items: cartItems,
+        count: cartCount,
+        loading,
+        refresh: refreshCart,
+        updateItem,
+        removeItem,
+    } = useCart();
 
-    const token = localStorage.getItem('auth_token');
-
-    const fetchCart = async () => {
-  setLoading(true);
-  try {
-    const res = await api.get('/cart');
-    const data = res.data;
-    if (data.success) {
-      const payload = data.data || data;
-      setCartItems(payload.items ?? payload.cart_items ?? []);
-      setSummary({
-        subtotal: payload.subtotal ?? 0,
-        shipping: payload.shipping ?? 0,
-        tax: payload.tax ?? 0,
-        total: payload.total ?? 0,
-      });
-    }
-  } catch (err) {
-    console.error('Cart fetch failed', err?.response?.status);
-    setCartItems([]);
-  } finally {
-    setLoading(false);
-  }
-};
-
+    // Ask the server for fresh data when the page mounts
     useEffect(() => {
-        fetchCart();
-        // eslint-disable-next-line
-    }, []);
+        refreshCart();
+    }, [refreshCart]);
 
-    // Replace updateCartQuantity
-const updateCartQuantity = async (key, quantity) => {
-    try {
-        const res = await api.post('/cart/update', { key, quantity });
-        if (res.data.success) {
-            fetchCart();
-            window.dispatchEvent(
-                new CustomEvent('cart:updated', {
-                    detail: { count: res.data.cart_count ?? 0 },
-                })
-            );
-        } else {
-            showToast(res.data.message || 'Failed to update cart', 'error');
+    /* ---------- Derived totals (no separate /cart call needed) ---------- */
+    const subtotal = cartItems.reduce(
+        (n, it) => n + Number(it.price) * Number(it.quantity),
+        0
+    );
+    const tax = Math.round(subtotal * 0.10 * 100) / 100;
+    const shipping = subtotal > 100 ? 0 : 10;
+    const total = subtotal + tax + shipping;
+
+    /* ---------- Handlers ---------- */
+    const updateCartQuantity = async (key, quantity) => {
+        try {
+            const res = await updateItem({ key, quantity });
+            if (!res.success) {
+                showToast(res.message || 'Failed to update cart', 'error');
+            }
+            // No fetchCart() needed — CartContext already refreshed
+        } catch {
+            showToast('Error updating cart', 'error');
         }
-    } catch {
-        showToast('Error updating cart', 'error');
-    }
-};
+    };
 
     const updateCartItem = (key, change) => {
         const item = cartItems.find((i) => i.key === key);
@@ -114,33 +73,22 @@ const updateCartQuantity = async (key, quantity) => {
         updateCartQuantity(key, quantity);
     };
 
-   const removeFromCart = async (key) => {
-    if (!key) return;
-    if (!window.confirm('Are you sure you want to remove this item?')) return;
-
-    try {
-        const res = await api.post('/cart/remove', { key });
-        if (res.data.success) {
-            showToast('Item removed from cart', 'success');
-            fetchCart();
-            window.dispatchEvent(
-                new CustomEvent('cart:updated', {
-                    detail: { count: res.data.cart_count ?? 0 },
-                })
-            );
-        } else {
-            showToast(res.data.message || 'Failed to remove item', 'error');
+    const removeFromCart = async (key) => {
+        if (!key) return;
+        if (!window.confirm('Are you sure you want to remove this item?')) return;
+        try {
+            const res = await removeItem({ key });
+            if (!res.success) {
+                showToast(res.message || 'Failed to remove item', 'error');
+            }
+        } catch {
+            showToast('Error removing item', 'error');
         }
-    } catch {
-        showToast('Error removing item', 'error');
-    }
-};
-    /* ---------------------------------------------------------- */
-    /*  Render helper: variant feature badges                      */
-    /* ---------------------------------------------------------- */
+    };
+
+    /* ---------- Render helper ---------- */
     const renderVariantFeatures = (item, className) => {
         if (!item.is_variant || !item.variant_features_list?.length) return null;
-
         return (
             <div className={className}>
                 {Object.entries(item.variant_features || {}).map(([name, value], i) => {
@@ -149,11 +97,9 @@ const updateCartQuantity = async (key, quantity) => {
                     return (
                         <span className="variant-feature-item" key={i}>
                             {isColor && isHex ? (
-                                <span
-                                    className="variant-feature-color"
-                                    style={{ backgroundColor: value }}
-                                    title={value}
-                                ></span>
+                                <span className="variant-feature-color"
+                                      style={{ backgroundColor: value }}
+                                      title={value}></span>
                             ) : (
                                 <span className="variant-feature-value">{value}</span>
                             )}
@@ -176,10 +122,10 @@ const updateCartQuantity = async (key, quantity) => {
                         <h1 className="cart-title">Shopping Cart</h1>
                         <p className="cart-subtitle">Review your items before checkout.</p>
                     </div>
-                    {cartItems.length > 0 && (
+                    {cartCount > 0 && (
                         <div className="cart-header-right">
                             <span className="cart-item-count">
-                                {cartItems.length} items
+                                {cartCount} items
                             </span>
                         </div>
                     )}
@@ -210,21 +156,15 @@ const updateCartQuantity = async (key, quantity) => {
                                         <tr key={item.key}>
                                             <td>
                                                 <div className="cart-product">
-                                                    <Link
-                                                        to={`/product/${item.slug}`}
-                                                        className="cart-product-image-link"
-                                                    >
-                                                        <img
-                                                            src={imageUrl(item)}
-                                                            alt={item.name}
-                                                            className="cart-product-image"
-                                                        />
+                                                    <Link to={`/product/${item.slug}`}
+                                                          className="cart-product-image-link">
+                                                        <img src={imageUrl(item)}
+                                                             alt={item.name}
+                                                             className="cart-product-image" />
                                                     </Link>
                                                     <div className="cart-product-info">
-                                                        <Link
-                                                            to={`/product/${item.slug}`}
-                                                            className="cart-product-name-link"
-                                                        >
+                                                        <Link to={`/product/${item.slug}`}
+                                                              className="cart-product-name-link">
                                                             <div className="cart-product-name">
                                                                 {item.name}
                                                             </div>
@@ -238,36 +178,20 @@ const updateCartQuantity = async (key, quantity) => {
                                             </td>
                                             <td>
                                                 <div className="quantity-selector">
-                                                    <button
-                                                        type="button"
-                                                        className="qty-btn qty-minus"
-                                                        onClick={() =>
-                                                            updateCartItem(item.key, -1)
-                                                        }
-                                                    >
+                                                    <button type="button"
+                                                            className="qty-btn qty-minus"
+                                                            onClick={() => updateCartItem(item.key, -1)}>
                                                         <i className="bi bi-dash"></i>
                                                     </button>
-                                                    <input
-                                                        type="number"
-                                                        className="qty-input cart-quantity"
-                                                        data-key={item.key}
-                                                        value={item.quantity}
-                                                        min="1"
-                                                        max={item.stock}
-                                                        onChange={(e) =>
-                                                            handleQuantityInput(
-                                                                item.key,
-                                                                e
-                                                            )
-                                                        }
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        className="qty-btn qty-plus"
-                                                        onClick={() =>
-                                                            updateCartItem(item.key, 1)
-                                                        }
-                                                    >
+                                                    <input type="number"
+                                                           className="qty-input cart-quantity"
+                                                           value={item.quantity}
+                                                           min="1"
+                                                           max={item.stock}
+                                                           onChange={(e) => handleQuantityInput(item.key, e)} />
+                                                    <button type="button"
+                                                            className="qty-btn qty-plus"
+                                                            onClick={() => updateCartItem(item.key, 1)}>
                                                         <i className="bi bi-plus"></i>
                                                     </button>
                                                 </div>
@@ -276,20 +200,12 @@ const updateCartQuantity = async (key, quantity) => {
                                                 ₹{Number(item.price).toFixed(2)}
                                             </td>
                                             <td className="cart-subtotal">
-                                                ₹
-                                                {Number(
-                                                    item.price * item.quantity
-                                                ).toFixed(2)}
+                                                ₹{(Number(item.price) * Number(item.quantity)).toFixed(2)}
                                             </td>
                                             <td>
-                                                <button
-                                                    type="button"
-                                                    className="cart-remove-btn remove-from-cart"
-                                                    data-key={item.key}
-                                                    onClick={() =>
-                                                        removeFromCart(item.key)
-                                                    }
-                                                >
+                                                <button type="button"
+                                                        className="cart-remove-btn remove-from-cart"
+                                                        onClick={() => removeFromCart(item.key)}>
                                                     <i className="bi bi-trash"></i>
                                                 </button>
                                             </td>
@@ -304,83 +220,51 @@ const updateCartQuantity = async (key, quantity) => {
                             {cartItems.map((item) => (
                                 <div className="cart-mobile-card" key={item.key}>
                                     <div className="cart-mobile-top">
-                                        <Link
-                                            to={`/product/${item.slug}`}
-                                            className="cart-mobile-image-link"
-                                        >
-                                            <img
-                                                src={imageUrl(item)}
-                                                alt={item.name}
-                                                className="cart-mobile-image"
-                                            />
+                                        <Link to={`/product/${item.slug}`}
+                                              className="cart-mobile-image-link">
+                                            <img src={imageUrl(item)}
+                                                 alt={item.name}
+                                                 className="cart-mobile-image" />
                                         </Link>
                                         <div className="cart-mobile-info">
-                                            <Link
-                                                to={`/product/${item.slug}`}
-                                                className="cart-mobile-name-link"
-                                            >
-                                                <div className="cart-mobile-name">
-                                                    {item.name}
-                                                </div>
+                                            <Link to={`/product/${item.slug}`}
+                                                  className="cart-mobile-name-link">
+                                                <div className="cart-mobile-name">{item.name}</div>
                                             </Link>
-                                            {renderVariantFeatures(
-                                                item,
-                                                'cart-mobile-variant-features'
-                                            )}
+                                            {renderVariantFeatures(item, 'cart-mobile-variant-features')}
                                             <div className="cart-mobile-price">
                                                 ₹{Number(item.price).toFixed(2)}
                                             </div>
                                         </div>
-                                        <button
-                                            type="button"
-                                            className="cart-remove-btn cart-mobile-remove remove-from-cart"
-                                            data-key={item.key}
-                                            onClick={() => removeFromCart(item.key)}
-                                        >
+                                        <button type="button"
+                                                className="cart-remove-btn cart-mobile-remove remove-from-cart"
+                                                onClick={() => removeFromCart(item.key)}>
                                             <i className="bi bi-trash"></i>
                                         </button>
                                     </div>
                                     <div className="cart-mobile-bottom">
                                         <div className="quantity-selector">
-                                            <button
-                                                type="button"
-                                                className="qty-btn qty-minus"
-                                                onClick={() =>
-                                                    updateCartItem(item.key, -1)
-                                                }
-                                            >
+                                            <button type="button"
+                                                    className="qty-btn qty-minus"
+                                                    onClick={() => updateCartItem(item.key, -1)}>
                                                 <i className="bi bi-dash"></i>
                                             </button>
-                                            <input
-                                                type="number"
-                                                className="qty-input cart-quantity"
-                                                data-key={item.key}
-                                                value={item.quantity}
-                                                min="1"
-                                                max={item.stock}
-                                                onChange={(e) =>
-                                                    handleQuantityInput(item.key, e)
-                                                }
-                                            />
-                                            <button
-                                                type="button"
-                                                className="qty-btn qty-plus"
-                                                onClick={() =>
-                                                    updateCartItem(item.key, 1)
-                                                }
-                                            >
+                                            <input type="number"
+                                                   className="qty-input cart-quantity"
+                                                   value={item.quantity}
+                                                   min="1"
+                                                   max={item.stock}
+                                                   onChange={(e) => handleQuantityInput(item.key, e)} />
+                                            <button type="button"
+                                                    className="qty-btn qty-plus"
+                                                    onClick={() => updateCartItem(item.key, 1)}>
                                                 <i className="bi bi-plus"></i>
                                             </button>
                                         </div>
                                         <div className="cart-mobile-subtotal">
-                                            <span className="cart-mobile-subtotal-label">
-                                                Subtotal
-                                            </span>
+                                            <span className="cart-mobile-subtotal-label">Subtotal</span>
                                             <span className="cart-mobile-subtotal-value">
-                                                ₹
-                                                {Number(
-                                                    item.price * item.quantity
-                                                ).toFixed(2)}
+                                                ₹{(Number(item.price) * Number(item.quantity)).toFixed(2)}
                                             </span>
                                         </div>
                                     </div>
@@ -393,25 +277,25 @@ const updateCartQuantity = async (key, quantity) => {
                             <div className="cart-summary-row">
                                 <span className="cart-summary-label">Subtotal</span>
                                 <span className="cart-summary-value">
-                                    ₹{Number(summary.subtotal).toFixed(2)}
+                                    ₹{subtotal.toFixed(2)}
                                 </span>
                             </div>
                             <div className="cart-summary-row">
                                 <span className="cart-summary-label">Shipping</span>
                                 <span className="cart-summary-value">
-                                    ₹{Number(summary.shipping).toFixed(2)}
+                                    ₹{shipping.toFixed(2)}
                                 </span>
                             </div>
                             <div className="cart-summary-row">
                                 <span className="cart-summary-label">Tax (10%)</span>
                                 <span className="cart-summary-value">
-                                    ₹{Number(summary.tax).toFixed(2)}
+                                    ₹{tax.toFixed(2)}
                                 </span>
                             </div>
                             <div className="cart-summary-total">
                                 <span className="cart-summary-total-label">Total</span>
                                 <span className="cart-summary-total-value">
-                                    ₹{Number(summary.total).toFixed(2)}
+                                    ₹{total.toFixed(2)}
                                 </span>
                             </div>
                         </div>
@@ -419,12 +303,10 @@ const updateCartQuantity = async (key, quantity) => {
                         {/* ===== ACTION BUTTONS ===== */}
                         <div className="cart-actions">
                             <Link to="/category" className="btn-continue">
-                                <i className="bi bi-arrow-left"></i>
-                                Continue Shopping
+                                <i className="bi bi-arrow-left"></i> Continue Shopping
                             </Link>
                             <Link to="/checkout" className="btn-checkout">
-                                <i className="bi bi-credit-card"></i>
-                                Proceed to Checkout
+                                <i className="bi bi-credit-card"></i> Proceed to Checkout
                             </Link>
                         </div>
                     </div>
@@ -438,8 +320,7 @@ const updateCartQuantity = async (key, quantity) => {
                             Start shopping to add items to your cart.
                         </p>
                         <Link to="/category" className="btn-empty-shop">
-                            <i className="bi bi-shop"></i>
-                            Continue Shopping
+                            <i className="bi bi-shop"></i> Continue Shopping
                         </Link>
                     </div>
                 )}
