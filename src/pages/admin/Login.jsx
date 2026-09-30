@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { showToast } from "../../utils/toast";
 import { useAuth } from "../../contexts/AuthContext";
-import api, { ensureCsrf } from "../../api/axios";
+import api from "../../api/axios";
 
 const Login = () => {
     const navigate = useNavigate();
