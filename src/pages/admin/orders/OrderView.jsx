@@ -7,7 +7,9 @@ import {
 } from 'react-bootstrap-icons';
 import { showToast } from '../../../components/admin/layouts/Footer';
 
-const API_BASE = `${import.meta.env.VITE_API_URL}/admin`;
+import API_URL from '../../../api/config';
+import { productImage as imageUrl } from '../../../utils/productImage';
+
 const getToken = () => localStorage.getItem('auth_token') || '';
 const authHeaders = (json = true) => ({
     Accept: 'application/json',
@@ -55,13 +57,6 @@ const ORDER_STATUSES = [
 // ✅ Match your DB enum — verify with:
 //    SHOW COLUMNS FROM orders LIKE 'payment_status';
 const PAYMENT_STATUSES = ['pending', 'paid', 'failed', 'refunded'];
-
-const imageUrl = (path) => {
-    if (!path) return '';
-    if (/^https?:\/\//i.test(path)) return path;
-    const clean = String(path).replace(/^\/+/, '').replace(/^storage\//i, '');
-    return `/storage/${clean}`;
-};
 
 const OrderView = () => {
     const { id } = useParams();
