@@ -44,7 +44,6 @@ const SCRIPTS = [
     // ------------------------------------------------------------------
     {
         id: 'product-detail',
-        src: '/js/product-detail.js',
         test: (p) => p.startsWith('/product/'),
     },
 
