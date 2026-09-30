@@ -25,3 +25,16 @@ export function clearAuth() {
     localStorage.removeItem('admin_token');
     localStorage.removeItem('token');
 }
+
+/* ---- Back-compat stubs (no longer used for auth) ---- */
+export function getToken() {
+    return null;
+}
+
+export function setToken() {
+    /* no-op */
+}
+
+export function removeToken() {
+    /* no-op */
+}
