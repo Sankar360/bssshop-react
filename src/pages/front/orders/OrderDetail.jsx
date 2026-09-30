@@ -5,6 +5,7 @@ import { showToast } from '../../../utils/toast';
 import API_URL from "../../../api/config";
 
 const API_BASE = API_URL;
+const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
 
 const formatRupee = (amount) => {
     const num = Number(amount) || 0;
@@ -22,46 +23,16 @@ const formatDate = (s) =>
               year: 'numeric',
           })
         : '—';
-
-/**
- * Build the full URL for an order item image.
- *
- * Accepts a path (bare filename or partial path) and a `source` hint:
- *   - "variant" → /storage/uploads/variants/images/<file>
- *   - "product" → /storage/uploads/products/images/<file>
- *
- * If the path is already absolute (http/https or starts with "/"), it is
- * returned unchanged so backend-provided full URLs keep working.
- */
-const imageUrl = (path, source = 'product') => {
-    const fallback = '/assets/images/default-product.jpg';
+        
+const imageUrl = (path) => {
+    const fallback = `${API_ORIGIN}/assets/images/default-product.jpg`;
     if (!path) return fallback;
-
-    // Already absolute URL — use as-is
-    if (/^https?:\/\//i.test(path)) return path;
-
-    // Already an absolute server path — use as-is
-    if (path.startsWith('/')) return path;
-
-    // Strip any leading "storage/" so we don't double-prefix
-    let cleaned = String(path).replace(/^storage\//i, '');
-
-    // If it already contains a full subpath, respect it
-    // e.g. "uploads/variants/images/foo.jpg"
-    if (/^uploads\//i.test(cleaned)) {
-        return `/storage/${cleaned.replace(/^\/+/, '')}`;
-    }
-
-    // Build the folder based on the source hint
-    const folder =
-        source === 'variant'
-            ? 'uploads/variants/images'
-            : 'uploads/products/images';
-
-    // Strip any leading "images/" or slashes the backend may have included
-    cleaned = cleaned.replace(/^images\//i, '').replace(/^\/+/, '');
-
-    return `/storage/${folder}/${cleaned}`;
+    if (/^https?:\/\//i.test(path)) return path;                     // already absolute
+    if (path.startsWith('/')) return `${API_ORIGIN}${path}`;         // "/storage/..."
+    if (/^storage\//i.test(path)) return `${API_ORIGIN}/${path}`;    // "storage/..."
+    if (/^uploads\//i.test(path)) return `${API_ORIGIN}/storage/${path}`;
+    // Bare filename — assume it's under uploads/products/
+    return `${API_ORIGIN}/storage/uploads/products/${path.replace(/^\/+/, '')}`;
 };
 
 const STATUS_BADGE = {
