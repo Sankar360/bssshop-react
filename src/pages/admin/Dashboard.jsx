@@ -21,7 +21,7 @@ const Dashboard = () => {
     }, []);
 
     const fetchDashboardData = async () => {
-        const token = localStorage.getItem('admin_token');
+        const token = localStorage.getItem('auth_token');
 
         if (!token) {
             navigate('/admin/login');
@@ -39,7 +39,7 @@ const Dashboard = () => {
             });
 
             if (response.status === 401) {
-                localStorage.removeItem('admin_token');
+                localStorage.removeItem('auth_token');
                 localStorage.removeItem('admin_user');
                 navigate('/admin/login');
                 return;

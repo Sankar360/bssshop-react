@@ -53,7 +53,7 @@ const AdminLayout = () => {
 
     // Fetch themes + languages (optional)
     useEffect(() => {
-        const token = localStorage.getItem('admin_token');
+        const token = localStorage.getItem('auth_token');
         if (!token) return;
         const headers = { Accept: 'application/json', Authorization: `Bearer ${token}` };
 

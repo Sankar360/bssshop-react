@@ -9,7 +9,7 @@ import API_URL from '../../../api/config';                             // ← ad
 import { productImage as imageUrl } from '../../../utils/productImage'; // ← use shared hel
 
 const API_BASE = API_URL + '/admin';                                    // ← absolute, no env var
-const getToken = () => localStorage.getItem('admin_token') || '';
+const getToken = () => localStorage.getItem('auth_token') || '';
 const authHeaders = (json = true) => ({
     Accept: 'application/json',
     Authorization: `Bearer ${getToken()}`,
@@ -297,7 +297,7 @@ const Profile = () => {
             const data = await res.json();
             if (data.success) {
                 showToast('Account deleted', 'success');
-                localStorage.removeItem('admin_token');
+                localStorage.removeItem('auth_token');
                 localStorage.removeItem('admin_user');
                 setTimeout(() => (window.location.href = '/admin/login'), 600);
             } else {

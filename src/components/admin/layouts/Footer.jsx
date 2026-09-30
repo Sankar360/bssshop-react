@@ -205,7 +205,7 @@ const Footer = ({
                     headers: {
                         'Content-Type': 'application/json',
                         Accept: 'application/json',
-                        Authorization: `Bearer ${localStorage.getItem('admin_token') || ''}`,
+                        Authorization: `Bearer ${localStorage.getItem('auth_token') || ''}`,
                         'X-CSRF-TOKEN': csrfToken,
                     },
                     body: JSON.stringify({ theme: themeName, [csrfField]: csrfToken }),
@@ -249,7 +249,7 @@ const Footer = ({
                     headers: {
                         'Content-Type': 'application/json',
                         Accept: 'application/json',
-                        Authorization: `Bearer ${localStorage.getItem('admin_token') || ''}`,
+                        Authorization: `Bearer ${localStorage.getItem('auth_token') || ''}`,
                         'X-CSRF-TOKEN': csrfToken,
                     },
                     body: JSON.stringify({ language: lang, [csrfField]: csrfToken }),
@@ -311,7 +311,7 @@ const Footer = ({
         });
 
         // 3. Badges
-        const token = localStorage.getItem('admin_token');
+        const token = localStorage.getItem('auth_token');
         if (token) {
             apiFetch('/admin/orders/check-updates', {
                 headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
@@ -412,7 +412,7 @@ const Footer = ({
                     method: 'DELETE',
                     headers: {
                         Accept: 'application/json',
-                        Authorization: `Bearer ${localStorage.getItem('admin_token') || ''}`,
+                        Authorization: `Bearer ${localStorage.getItem('auth_token') || ''}`,
                         'X-CSRF-TOKEN': csrfToken,
                     },
                 });

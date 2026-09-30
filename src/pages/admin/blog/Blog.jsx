@@ -11,7 +11,7 @@ import API_URL from '../../../api/config';                             // ← ad
 import { productImage as imageUrl } from '../../../utils/productImage'; // ← use shared hel
 
 const API_BASE = API_URL + '/admin';                                    // ← absolute, no env var
-const getToken = () => localStorage.getItem('admin_token') || '';
+const getToken = () => localStorage.getItem('auth_token') || '';
 const authHeaders = () => ({
     Accept: 'application/json',
     Authorization: `Bearer ${getToken()}`,

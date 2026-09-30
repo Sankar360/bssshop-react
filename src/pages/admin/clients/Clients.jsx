@@ -10,7 +10,7 @@ import {
 import { showToast } from '../../../components/admin/layouts/Footer';
 
 const API_BASE = `${import.meta.env.VITE_API_URL}/admin`;
-const getToken = () => localStorage.getItem('admin_token') || '';
+const getToken = () => localStorage.getItem('auth_token') || '';
 const authHeaders = (json = true) => ({
     Accept: 'application/json',
     Authorization: `Bearer ${getToken()}`,
@@ -69,7 +69,7 @@ const Clients = () => {
             const res = await fetch(url, { headers: authHeaders(false) });
 
             if (res.status === 401) {
-                localStorage.removeItem('admin_token');
+                localStorage.removeItem('auth_token');
                 localStorage.removeItem('admin_user');
                 showToast('Session expired. Please log in again.', 'error');
                 return;

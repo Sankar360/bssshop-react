@@ -12,7 +12,7 @@ function getAuthToken() {
         localStorage.getItem('auth_token') ||
         localStorage.getItem('customer_token') ||
         localStorage.getItem('token') ||
-        localStorage.getItem('admin_token') ||      // ← ADD THIS
+        localStorage.getItem('auth_token') ||      // ← ADD THIS
         null
     );
 }

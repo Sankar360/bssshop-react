@@ -30,7 +30,7 @@ export function clearAuth() {
     localStorage.removeItem(TOKEN_KEY);
     // legacy keys — safe to purge
     localStorage.removeItem('admin_user');
-    localStorage.removeItem('admin_token');
+    localStorage.removeItem('auth_token');
     localStorage.removeItem('user');
     localStorage.removeItem('customer');
 }

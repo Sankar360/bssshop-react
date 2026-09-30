@@ -76,7 +76,7 @@ const Header = ({
         if (loggingOut) return;
         setLoggingOut(true);
 
-        const token = localStorage.getItem('admin_token');
+        const token = localStorage.getItem('auth_token');
 
         try {
             await apiFetch('/admin/logout', {
@@ -90,7 +90,7 @@ const Header = ({
             console.warn('Logout API failed (continuing client-side logout):', err);
         }
 
-        localStorage.removeItem('admin_token');
+        localStorage.removeItem('auth_token');
         localStorage.removeItem('admin_user');
 
         setUserOpen(false);

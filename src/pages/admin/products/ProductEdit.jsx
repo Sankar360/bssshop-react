@@ -20,7 +20,7 @@ import CombinationsTab from './edit/CombinationsTab';
 
 
 const API_BASE = API_URL + "/admin";
-const getToken = () => localStorage.getItem('admin_token') || '';
+const getToken = () => localStorage.getItem('auth_token') || '';
 
 const ProductEdit = () => {
     const { id } = useParams();

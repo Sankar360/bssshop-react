@@ -4,7 +4,7 @@ import { Sliders, ArrowRepeat, Save } from 'react-bootstrap-icons';
 import { showToast } from '../../../../utils/toast';
 
 const API_BASE = `${import.meta.env.VITE_API_URL}/admin`;
-const getToken = () => localStorage.getItem('admin_token') || '';
+const getToken = () => localStorage.getItem('auth_token') || '';
 
 /**
  * Check if a saved value list matches a given option.

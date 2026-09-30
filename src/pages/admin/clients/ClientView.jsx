@@ -5,7 +5,7 @@ import { Person, ArrowLeft, Pencil, PersonBadge, Cart, CurrencyDollar, ClockHist
 import { showToast } from '../../../components/admin/layouts/Footer';
 
 const API_BASE = `${import.meta.env.VITE_API_URL}/admin`;
-const getToken = () => localStorage.getItem('admin_token') || '';
+const getToken = () => localStorage.getItem('auth_token') || '';
 const authHeaders = () => ({
     Accept: 'application/json',
     Authorization: `Bearer ${getToken()}`,

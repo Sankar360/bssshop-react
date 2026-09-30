@@ -9,7 +9,7 @@ import API_URL from "../../../../api/config";
 import { productImage as imageUrl } from "../../../../utils/productImage";
 
 const API_BASE = API_URL + "/admin";
-const getToken = () => localStorage.getItem('admin_token') || '';
+const getToken = () => localStorage.getItem('auth_token') || '';
 const authHeaders = (json = false) => ({
     Accept: 'application/json',
     Authorization: `Bearer ${getToken()}`,
