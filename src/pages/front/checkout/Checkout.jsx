@@ -4,27 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { showToast } from "../../../utils/toast";
 import { loadRazorpay } from "../../../utils/razorpay";
 import API_URL from "../../../api/config";
+import { imageUrl } from "../../../utils/image";
 
 const API_BASE = API_URL;
 
-// src/utils/imageUrl.js
-export const imageUrl = (path) => {
-  if (!path) return "/assets/images/default-product.jpg";
-
-  if (/^https?:\/\//i.test(path)) return path;
-
-  if (path.startsWith("/storage/")) return path;
-  if (path.startsWith("storage/")) return `/${path}`;
-
-  if (path.startsWith("/uploads/")) return `/storage${path}`;
-  if (path.startsWith("uploads/")) return `/storage/${path}`;
-
-  if (path.startsWith("/assets/")) return path;
-  if (path.startsWith("assets/")) return `/${path}`;
-
-  const clean = path.replace(/^\/+/, "");
-  return `/storage/${clean}`;
-};
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -63,52 +46,57 @@ const Checkout = () => {
   /* ---------------------------------------------------------- */
   useEffect(() => {
     (async () => {
-      try {
-        const res = await fetch(`${API_BASE}/checkout`, {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token || ""}`,
-          },
-        });
-        const data = await res.json();
+        setLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/checkout`, {
+                headers: {
+                    Accept: "application/json",
+                    Authorization: `Bearer ${token || ""}`,
+                },
+            });
 
-        if (data.success) {
-          const payload = data.data || data;
-          setCartData(
-            payload.cart_data || {
-              items: [],
-              subtotal: 0,
-              tax: 0,
-              tax_rate: 10,
-              shipping: 0,
-              total: 0,
-            },
-          );
-          setUserData(payload.user_data || {});
-          setPaymentMethods(payload.payment_methods || []);
-          setIsLoggedIn(!!payload.is_logged_in);
-          setSelectedPayment(payload.payment_methods?.[0]?.id || "");
+            // Handle non-200 responses
+            if (res.status === 401) {
+                showToast("Please log in to checkout.", "error");
+                navigate("/auth/login");
+                return;
+            }
 
-          const u = payload.user_data || {};
-          setForm((f) => ({
-            ...f,
-            name: u.name || "",
-            email: u.email || "",
-            phone: u.phone || "",
-            address: u.address || "",
-            city: u.city || "",
-            state: u.state || "",
-            postal_code: u.postal_code || "",
-            country: u.country || "",
-          }));
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                showToast(data.message || "Failed to load checkout", "error");
+                setCartData({ items: [], subtotal: 0, tax: 0, tax_rate: 10, shipping: 0, total: 0 });
+                return;
+            }
+
+            const payload = data.data;
+            setCartData(payload.cart_data);
+            setUserData(payload.user_data || {});
+            setPaymentMethods(payload.payment_methods || []);
+            setIsLoggedIn(!!payload.is_logged_in);
+            setSelectedPayment(payload.payment_methods?.[0]?.id || "");
+
+            const u = payload.user_data || {};
+            setForm((f) => ({
+                ...f,
+                name: u.name || "",
+                email: u.email || "",
+                phone: u.phone || "",
+                address: u.address || "",
+                city: u.city || "",
+                state: u.state || "",
+                postal_code: u.postal_code || "",
+                country: u.country || "",
+            }));
+        } catch (err) {
+            console.error("Checkout fetch failed", err);
+            showToast("Network error. Please try again.", "error");
+        } finally {
+            setLoading(false);
         }
-      } catch (err) {
-        console.error("Checkout fetch failed", err);
-      } finally {
-        setLoading(false);
-      }
     })();
-  }, [token]);
+}, [token, navigate]);
 
   /* ---------------------------------------------------------- */
   /*  Field change                                               */
