@@ -83,13 +83,21 @@ const Cart = () => {
 
     // Replace updateCartQuantity
 const updateCartQuantity = async (key, quantity) => {
-  try {
-    const res = await api.post('/cart/update', { key, quantity });
-    if (res.data.success) fetchCart();
-    else showToast(res.data.message || 'Failed to update cart', 'error');
-  } catch {
-    showToast('Error updating cart', 'error');
-  }
+    try {
+        const res = await api.post('/cart/update', { key, quantity });
+        if (res.data.success) {
+            fetchCart();
+            window.dispatchEvent(
+                new CustomEvent('cart:updated', {
+                    detail: { count: res.data.cart_count ?? 0 },
+                })
+            );
+        } else {
+            showToast(res.data.message || 'Failed to update cart', 'error');
+        }
+    } catch {
+        showToast('Error updating cart', 'error');
+    }
 };
 
     const updateCartItem = (key, change) => {
@@ -106,21 +114,26 @@ const updateCartQuantity = async (key, quantity) => {
         updateCartQuantity(key, quantity);
     };
 
-    // Replace removeFromCart
-const removeFromCart = async (key) => {
-  if (!key) return;
-  if (!window.confirm('Are you sure you want to remove this item?')) return;
-  try {
-    const res = await api.post('/cart/remove', { key });
-    if (res.data.success) {
-      showToast('Item removed from cart', 'success');
-      fetchCart();
-    } else {
-      showToast(res.data.message || 'Failed to remove item', 'error');
+   const removeFromCart = async (key) => {
+    if (!key) return;
+    if (!window.confirm('Are you sure you want to remove this item?')) return;
+
+    try {
+        const res = await api.post('/cart/remove', { key });
+        if (res.data.success) {
+            showToast('Item removed from cart', 'success');
+            fetchCart();
+            window.dispatchEvent(
+                new CustomEvent('cart:updated', {
+                    detail: { count: res.data.cart_count ?? 0 },
+                })
+            );
+        } else {
+            showToast(res.data.message || 'Failed to remove item', 'error');
+        }
+    } catch {
+        showToast('Error removing item', 'error');
     }
-  } catch {
-    showToast('Error removing item', 'error');
-  }
 };
     /* ---------------------------------------------------------- */
     /*  Render helper: variant feature badges                      */
