@@ -5,6 +5,7 @@ import { showToast } from '../../../utils/toast';
 import API_URL from "../../../api/config";
 
 const API_BASE = API_URL;
+const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
 
 const formatRupee = (amount) => {
     const num = Number(amount) || 0;
@@ -33,35 +34,13 @@ const formatDate = (s) =>
  * If the path is already absolute (http/https or starts with "/"), it is
  * returned unchanged so backend-provided full URLs keep working.
  */
-const imageUrl = (path, source = 'product') => {
-    const fallback = '/assets/images/default-product.jpg';
-    if (!path) return fallback;
-
-    // Already absolute URL — use as-is
+const imageUrl = (path) => {
+    if (!path) return `${API_ORIGIN}/assets/images/default-product.jpg`;
     if (/^https?:\/\//i.test(path)) return path;
-
-    // Already an absolute server path — use as-is
-    if (path.startsWith('/')) return path;
-
-    // Strip any leading "storage/" so we don't double-prefix
-    let cleaned = String(path).replace(/^storage\//i, '');
-
-    // If it already contains a full subpath, respect it
-    // e.g. "uploads/variants/images/foo.jpg"
-    if (/^uploads\//i.test(cleaned)) {
-        return `/storage/${cleaned.replace(/^\/+/, '')}`;
-    }
-
-    // Build the folder based on the source hint
-    const folder =
-        source === 'variant'
-            ? 'uploads/variants/images'
-            : 'uploads/products/images';
-
-    // Strip any leading "images/" or slashes the backend may have included
-    cleaned = cleaned.replace(/^images\//i, '').replace(/^\/+/, '');
-
-    return `/storage/${folder}/${cleaned}`;
+    if (path.startsWith('/')) return `${API_ORIGIN}${path}`;
+    if (/^storage\//i.test(path)) return `${API_ORIGIN}/${path}`;
+    if (/^(uploads|assets)\//i.test(path)) return `${API_ORIGIN}/storage/${path}`;
+    return `${API_ORIGIN}/storage/${path.replace(/^\/+/, '')}`;
 };
 
 const STATUS_BADGE = {
@@ -264,6 +243,9 @@ const OrderDetail = () => {
                                                                     height: 50,
                                                                     objectFit: 'cover',
                                                                     borderRadius: 8,
+                                                                }}
+                                                                onError={(e) => {
+                                                                    e.currentTarget.src = `${API_ORIGIN}/assets/images/default-product.jpg`;
                                                                 }}
                                                             />
                                                         )}
