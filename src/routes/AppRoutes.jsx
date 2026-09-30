@@ -1,7 +1,7 @@
-import API_URL from "../api/config";
 // src/routes/AppRoutes.jsx
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+
 
 // ─── Layouts ─────────────────────────────────────────────────────
 import AdminLayout from "../components/admin/layouts/AdminLayout";
@@ -79,38 +79,10 @@ import OrderDetail from "../pages/front/orders/OrderDetail";
 import MyProfile from "../pages/front/profile/MyProfile";
 import ProfileEdit from "../pages/front/profile/ProfileEdit";
 
-/* ------------------------------------------------------------------ */
-/*  Admin ProtectedRoute                                               */
-/* ------------------------------------------------------------------ */
-const ProtectedRoute = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(null);
-    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const checkAuth = async () => {
-            const token = localStorage.getItem('admin_token');
-            if (!token) {
-                setIsAuthenticated(false);
-                setLoading(false);
-                return;
-            }
-            try {
-                const response = await fetch(`${API_URL}/admin/check-auth`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        Accept: 'application/json',
-                    },
-                });
-                const data = await response.json();
-                setIsAuthenticated(data.success);
-            } catch {
-                setIsAuthenticated(false);
-            } finally {
-                setLoading(false);
-            }
-        };
-        checkAuth();
-    }, []);
+
+const ProtectedRoute = ({ children }) => {
+    const { user, loading, isAdmin } = useAuth();
 
     if (loading) {
         return (
@@ -125,7 +97,10 @@ const ProtectedRoute = ({ children }) => {
         );
     }
 
-    if (!isAuthenticated) return <Navigate to="/admin/login" replace />;
+    if (!user || !isAdmin) {
+        return <Navigate to="/admin/login" replace />;
+    }
+
     return children;
 };
 
