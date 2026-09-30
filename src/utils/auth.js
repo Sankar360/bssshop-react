@@ -1,40 +1,36 @@
 // src/utils/auth.js
-const USER_KEYS = ['auth_user', 'admin_user', 'user', 'customer'];
+const USER_KEY = 'auth_user';
+const TOKEN_KEY = 'auth_token';
 
 export function getUser() {
-    for (const k of USER_KEYS) {
-        const raw = localStorage.getItem(k);
-        if (!raw) continue;
-        try {
-            return JSON.parse(raw);
-        } catch {
-            /* ignore */
-        }
-    }
-    return null;
+    const raw = localStorage.getItem(USER_KEY);
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch { return null; }
 }
 
 export function setUser(user) {
     if (!user) return;
-    localStorage.setItem('auth_user', JSON.stringify(user));
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
 }
 
-export function clearAuth() {
-    USER_KEYS.forEach((k) => localStorage.removeItem(k));
-    // Legacy cleanup — make sure no token keys linger
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('token');
-}
-
-/* ---- Back-compat stubs (no longer used for auth) ---- */
 export function getToken() {
-    return null;
+    return localStorage.getItem(TOKEN_KEY);
 }
 
-export function setToken() {
-    /* no-op */
+export function setToken(token) {
+    if (token) localStorage.setItem(TOKEN_KEY, token);
 }
 
 export function removeToken() {
-    /* no-op */
+    localStorage.removeItem(TOKEN_KEY);
+}
+
+export function clearAuth() {
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(TOKEN_KEY);
+    // legacy keys — safe to purge
+    localStorage.removeItem('admin_user');
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('customer');
 }

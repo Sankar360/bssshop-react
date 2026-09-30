@@ -6,9 +6,12 @@ import React, {
     useState,
     useCallback,
 } from 'react';
-import api, { ensureCsrf } from '../api/axios';
+import api from '../api/axios';
 import {
+    getUser as getStoredUser,
     setUser as setStoredUser,
+    getToken,
+    setToken,
     clearAuth,
 } from '../utils/auth';
 
@@ -20,10 +23,24 @@ export const AuthProvider = ({ children }) => {
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    /**
-     * Ask the backend who we are (uses session cookie).
-     */
     const refreshAuth = useCallback(async () => {
+        const token = getToken();
+        const storedUser = getStoredUser();
+
+        if (!token) {
+            setUser(null);
+            setLoggedIn(false);
+            setIsAdmin(false);
+            setLoading(false);
+            return;
+        }
+
+        if (storedUser) {
+            setUser(storedUser);
+            setLoggedIn(true);
+            setIsAdmin(storedUser.role === 'admin');
+        }
+
         try {
             const { data } = await api.get('/auth/check');
             if (data?.is_logged_in && data?.data?.user) {
@@ -32,30 +49,30 @@ export const AuthProvider = ({ children }) => {
                 setIsAdmin(data.data.user.role === 'admin');
                 setStoredUser(data.data.user);
             } else {
+                clearAuth();
                 setUser(null);
                 setLoggedIn(false);
                 setIsAdmin(false);
-                clearAuth();
             }
         } catch {
+            clearAuth();
             setUser(null);
             setLoggedIn(false);
             setIsAdmin(false);
-            clearAuth();
         } finally {
             setLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        ensureCsrf().finally(refreshAuth);
+        refreshAuth();
     }, [refreshAuth]);
 
     /**
-     * Manually set the auth user (used after admin login where the
-     * admin login endpoint is different from the customer login).
+     * Save user + (optional) token.
+     * Called from admin login and customer register/login.
      */
-    const setAuthUser = useCallback((u) => {
+    const setAuthUser = useCallback((u, token = null) => {
         if (!u) {
             setUser(null);
             setLoggedIn(false);
@@ -63,17 +80,14 @@ export const AuthProvider = ({ children }) => {
             clearAuth();
             return;
         }
+        if (token) setToken(token);
         setUser(u);
         setLoggedIn(true);
         setIsAdmin(u.role === 'admin');
         setStoredUser(u);
     }, []);
 
-    /**
-     * Customer login via /auth/login
-     */
     const doLogin = async (email, password, remember = false) => {
-        await ensureCsrf();
         const { data } = await api.post('/auth/login', {
             email: String(email || '').trim(),
             password: String(password || ''),
@@ -81,29 +95,21 @@ export const AuthProvider = ({ children }) => {
         });
 
         if (data?.success && data?.data?.user) {
-            setUser(data.data.user);
-            setLoggedIn(true);
-            setIsAdmin(data.data.user.role === 'admin');
-            setStoredUser(data.data.user);
+            setAuthUser(data.data.user, data.data.token);
         }
         return data;
     };
 
     const doRegister = async (payload) => {
-        await ensureCsrf();
         const { data } = await api.post('/auth/register', payload);
         if (data?.success && data?.data?.user) {
-            setUser(data.data.user);
-            setLoggedIn(true);
-            setIsAdmin(false);
-            setStoredUser(data.data.user);
+            setAuthUser(data.data.user, data.data.token);
         }
         return data;
     };
 
     const doLogout = async () => {
         try {
-            await ensureCsrf();
             await api.post('/auth/logout');
         } catch {
             /* ignore */
@@ -112,7 +118,6 @@ export const AuthProvider = ({ children }) => {
         setLoggedIn(false);
         setIsAdmin(false);
         clearAuth();
-        await ensureCsrf(true).catch(() => {});
     };
 
     const value = {
