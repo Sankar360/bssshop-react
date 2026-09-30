@@ -21,21 +21,7 @@ export function setUser(user) {
 
 export function clearAuth() {
     USER_KEYS.forEach((k) => localStorage.removeItem(k));
-}
-
-/* Back-compat stubs — tokens no longer used */
-export function getToken() {
-    return null;
-}
-
-/* Server-side logout via axios — used by Header if needed */
-import api, { ensureCsrf } from '../api/axios';
-export async function logout() {
-    try {
-        await ensureCsrf();
-        await api.post('/auth/logout');
-    } catch (err) {
-        console.warn('Logout API failed', err);
-    }
-    clearAuth();
+    // Legacy cleanup — make sure no token keys linger
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('token');
 }

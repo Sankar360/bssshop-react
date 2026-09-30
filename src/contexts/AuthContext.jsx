@@ -8,7 +8,6 @@ import React, {
 } from 'react';
 import api, { ensureCsrf } from '../api/axios';
 import {
-    getUser as getStoredUser,
     setUser as setStoredUser,
     clearAuth,
 } from '../utils/auth';
@@ -21,6 +20,9 @@ export const AuthProvider = ({ children }) => {
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
 
+    /**
+     * Ask the backend who we are (uses session cookie).
+     */
     const refreshAuth = useCallback(async () => {
         try {
             const { data } = await api.get('/auth/check');
@@ -49,6 +51,27 @@ export const AuthProvider = ({ children }) => {
         ensureCsrf().finally(refreshAuth);
     }, [refreshAuth]);
 
+    /**
+     * Manually set the auth user (used after admin login where the
+     * admin login endpoint is different from the customer login).
+     */
+    const setAuthUser = useCallback((u) => {
+        if (!u) {
+            setUser(null);
+            setLoggedIn(false);
+            setIsAdmin(false);
+            clearAuth();
+            return;
+        }
+        setUser(u);
+        setLoggedIn(true);
+        setIsAdmin(u.role === 'admin');
+        setStoredUser(u);
+    }, []);
+
+    /**
+     * Customer login via /auth/login
+     */
     const doLogin = async (email, password, remember = false) => {
         await ensureCsrf();
         const { data } = await api.post('/auth/login', {
@@ -89,7 +112,6 @@ export const AuthProvider = ({ children }) => {
         setLoggedIn(false);
         setIsAdmin(false);
         clearAuth();
-        // Force a fresh CSRF cookie for the next session
         await ensureCsrf(true).catch(() => {});
     };
 
@@ -102,6 +124,7 @@ export const AuthProvider = ({ children }) => {
         register: doRegister,
         logout: doLogout,
         refreshAuth,
+        setAuthUser,
     };
 
     return (

@@ -34,6 +34,7 @@ api.interceptors.response.use(
       localStorage.removeItem('admin_user');
       localStorage.removeItem('user');
       localStorage.removeItem('customer');
+      localStorage.removeItem('admin_token');   // safety: purge legacy key
     }
     return Promise.reject(error);
   },

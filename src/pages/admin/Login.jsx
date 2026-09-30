@@ -1,15 +1,13 @@
-import API_URL from "../../api/config";
 // src/pages/admin/Login.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { showToast } from "../../utils/toast";
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from "../../contexts/AuthContext";
 import api, { ensureCsrf } from "../../api/axios";
-
 
 const Login = () => {
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { setAuthUser } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -43,33 +41,33 @@ const Login = () => {
         return () => document.removeEventListener("keydown", handleKeyDown);
     }, []);
 
+    // Redirect if already logged in as admin (session-based)
     useEffect(() => {
-        const checkAuth = async () => {
+        let cancelled = false;
+        (async () => {
             try {
-                const token = localStorage.getItem("admin_token");
-                if (token) {
-                    const response = await fetch(`${API_URL}/admin/check-auth`, {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            Accept: "application/json",
-                        },
-                    });
-                    const data = await response.json();
-                    if (data.success) navigate("/admin/dashboard", { replace: true });
+                await ensureCsrf();
+                const { data } = await api.get("/admin/check-auth");
+                if (!cancelled && data?.success) {
+                    setAuthUser(data.data.user);
+                    navigate("/admin/dashboard", { replace: true });
                 }
             } catch {
-                console.log("Not authenticated");
+                // Not authenticated — stay on page
             }
+        })();
+        return () => {
+            cancelled = true;
         };
-        checkAuth();
-    }, [navigate]);
+    }, [navigate, setAuthUser]);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
 
         try {
-            await ensureCsrf();               // get XSRF-TOKEN cookie
+            await ensureCsrf();
+
             const { data } = await api.post("/admin/login", {
                 email: email.trim(),
                 password,
@@ -83,7 +81,8 @@ const Login = () => {
                     return;
                 }
 
-                login(loggedInUser, null); 
+                // ✅ Sync React state. Session cookie is already set by the backend.
+                setAuthUser(loggedInUser);
 
                 showToast(data.message || "Welcome back!", "success");
                 navigate("/admin/dashboard", { replace: true });
@@ -97,8 +96,10 @@ const Login = () => {
                 showToast(data.message || "Invalid email or password.", "error");
             }
         } catch (err) {
-            console.error("Login error:", err);
-            showToast("Something went wrong. Please try again.", "error");
+            const msg =
+                err?.response?.data?.message ||
+                "Something went wrong. Please try again.";
+            showToast(msg, "error");
         } finally {
             setLoading(false);
         }

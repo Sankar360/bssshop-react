@@ -2,14 +2,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import API_URL from "../../../api/config";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { logout as apiLogout } from "../../../utils/auth";
 import { showToast } from "../../../utils/toast";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useCart } from "../../../contexts/CartContext";
 import { useWishlist } from "../../../contexts/WishlistContext";
 import "../../../css/custom-header.css";
 
-const API_BASE = API_URL;
 const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
 
 function resolveImageUrl(input) {
@@ -43,20 +41,13 @@ const Header = ({
   const userName = user?.name || "";
   const avatarUrl = user?.avatar ? resolveImageUrl(user.avatar) : "";
 
-  /* ---------- Logout ---------- */
   const handleLogout = async (e) => {
     if (e) e.preventDefault();
-    try {
-      await apiLogout();
-    } catch {
-      /* ignore */
-    }
-    doLogout();
+    await doLogout();
     showToast("You have been logged out.", "success");
     navigate("/");
   };
 
-  /* ---------- Menu helpers ---------- */
   const isActiveMenu = (url) => {
     if (!url) return false;
     const clean = url.replace(/^https?:\/\/[^/]+/i, "");
@@ -102,7 +93,6 @@ const Header = ({
   ];
   const menusToRender = headerMenus.length > 0 ? headerMenus : fallbackMenus;
 
-  /* ---------- Sticky navbar ---------- */
   useEffect(() => {
     const navbar = document.getElementById("mainNav");
     if (!navbar) return;
@@ -115,7 +105,6 @@ const Header = ({
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* ---------- Search ---------- */
   const useSearchBox = () => {
     const [query, setQuery] = useState("");
     const [open, setOpen] = useState(false);
@@ -536,17 +525,17 @@ const Header = ({
             )}
 
             <li className="nav-item">
-  <Link className="nav-link nav-icon-link position-relative" to="/cart">
-    <i className="bi bi-cart fs-5"></i>
-    <span className="badge bg-danger rounded-pill cart-count">{cartCount}</span>
-  </Link>
-</li>
+              <Link className="nav-link nav-icon-link position-relative" to="/cart">
+                <i className="bi bi-cart fs-5"></i>
+                <span className="badge bg-danger rounded-pill cart-count">{cartCount}</span>
+              </Link>
+            </li>
             <li className="nav-item">
-  <Link className="nav-link nav-icon-link position-relative" to="/wishlist">
-    <i className="bi bi-heart fs-5"></i>
-    <span className="badge bg-danger rounded-pill wishlist-count">{wishlistCount}</span>
-  </Link>
-</li>
+              <Link className="nav-link nav-icon-link position-relative" to="/wishlist">
+                <i className="bi bi-heart fs-5"></i>
+                <span className="badge bg-danger rounded-pill wishlist-count">{wishlistCount}</span>
+              </Link>
+            </li>
           </ul>
         </div>
       </div>
